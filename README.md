@@ -1,12 +1,12 @@
 # dsh-whale-weather · 小鲸鱼天气
 
-![version](https://img.shields.io/badge/version-0.3.2-blue)
+![version](https://img.shields.io/badge/version-0.3.3-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.3.2**（早期版本，功能还在加）。
+> 当前版本 **0.3.3**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
@@ -19,7 +19,7 @@
 **本插件是标准 dsh 插件，不依赖 qq-bridge。**
 
 ```bash
-dsh plugin --profile web add dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 ```
 
 重启 dsh 后，**任何 dsh 会话**（Web、TUI、headless）都能调用全部 5 个工具。qq-bridge 只是「把 agent 接到 QQ」的可选宿主，不是运行前提。
@@ -192,7 +192,7 @@ QQ_WEATHER_ALERT_ENABLED=false          # 关闭
 ## 安装
 
 ```bash
-dsh plugin --profile web add dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 ```
 
 或直接从 GitHub 装：

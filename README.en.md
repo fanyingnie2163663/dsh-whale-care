@@ -1,12 +1,12 @@
 # dsh-whale-weather
 
-![version](https://img.shields.io/badge/version-0.3.2-blue)
+![version](https://img.shields.io/badge/version-0.3.3-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.3.2** (early, still growing).
+> Current version **0.3.3** (early, still growing).
 
 A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
 
@@ -19,7 +19,7 @@ Free, no API key, no account binding.
 **This is a standard dsh plugin and does not depend on qq-bridge.**
 
 ```bash
-dsh plugin --profile web add dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 ```
 
 Restart dsh and **any dsh session** (Web, TUI, headless) can call all five tools. qq-bridge is only an optional host that puts the agent on QQ.
@@ -99,7 +99,7 @@ Preferences live in `$DSH_HOME/whale-weather/profile.json` (default `~/.dsh/whal
 ## Install
 
 ```bash
-dsh plugin --profile web add dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 ```
 
 or straight from GitHub:
