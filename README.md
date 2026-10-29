@@ -1,12 +1,12 @@
 # dsh-whale-weather · 小鲸鱼天气
 
-![version](https://img.shields.io/badge/version-0.1.1-blue)
+![version](https://img.shields.io/badge/version-0.2.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.1.1**（早期版本，功能还在加）。
+> 当前版本 **0.2.0**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
@@ -26,13 +26,14 @@
 - **它只说有用的**：按影响大小排序，最多三条，不把规则表倒给用户；
 - **它是本地的**：偏好存在本机 `~/.dsh/whale-weather/profile.json`，不联网上传。
 
-## 三个工具
+## 四个工具
 
 | 工具 | 用途 |
 | --- | --- |
 | `weather` | 详细播报：当前天气、空气质量、未来三天、常规建议 |
 | `weather_care` | **关心版**：结合用户偏好与时段，写成一段可以直接发出去的话 |
 | `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、出行方式、有没有带伞、健康备注 |
+| `weather_reminder` | 统一提醒：到点提醒吃药/喝水，或带天气条件的提醒（降雨/降温/大风/温差/空气质量，命中才提醒） |
 
 ## 关心版长什么样
 
@@ -59,6 +60,26 @@
 | 信息缺失 | 下雨但不知道有没有伞时，会问一句"伞在包里吗？" |
 
 偏好存在 `$DSH_HOME/whale-weather/profile.json`（默认 `~/.dsh/whale-weather/profile.json`，权限 600）。
+
+## 提醒
+
+提醒不是单独的一套东西，本质就是**时间 + 触发条件 + 内容**：
+
+| 类型 | 例子 | 到点行为 |
+| --- | --- | --- |
+| `intent=text` | 每天 08:00 吃降压药 | 直接说 |
+| `intent=weather` | 每天 21:00 检查明天是否降温 ≥5°C | 用**那一刻**的最新预报判断，条件命中才说 |
+| `intent=weather` | 每天 07:00 降雨概率 ≥40% 就提醒带伞 | 同上 |
+| `intent=weather` | 每天 07:00 温差 ≥10°C 提醒加外套 | 同上 |
+
+- 天气条件在到期那一刻评估，所以昨晚设的提醒不会拿旧预报说错话；
+- 同一天不会重复提醒（`lastFiredDate`），有 2 小时补发窗口（08:00 的提醒 09:30 唤醒也还能补）；
+- 可以按星期几设置（`days: [1,2,3,4,5]` 只在工作日）；
+- 提醒存在 `$DSH_HOME/whale-weather/reminders.json`（600）。
+
+**怎么真的响**：dsh 本身没有定时器，提醒靠宿主在到点时唤醒 agent。配合
+`qq-bridge`：它每 30 秒检查 `reminders.json`，到点唤醒对应会话，agent 再调用
+`weather_reminder(action=due)` 取出内容并自然说出。纯 dsh Web 环境里，agent 只会在自己醒来时顺带检查。
 
 ## 详细播报特性
 
@@ -171,15 +192,17 @@ const SAFE_EXACT = new Set([
 node scripts/demo.mjs 合肥                # 详细播报
 node scripts/demo.mjs 合肥 care           # 关心版（默认偏好）
 node scripts/demo.mjs 合肥 care '{"nickname":"阿宁","coldSensitive":true,"commute":"bike"}'
+node scripts/test-reminders.mjs           # 离线单测：时间窗/去重/五种天气条件
 ```
 
 目录：
 
 ```
 lib/weather.js   纯逻辑：wttr + open-meteo + 中文映射 + 详细建议
-lib/care.js      纯逻辑：偏好 + 时段 → 关心版话术
+lib/care.js      纯逻辑：偏好 + 时段 + 分时段温度 → 关心版话术
 lib/profile.js   偏好读写（$DSH_HOME/whale-weather/profile.json）
-lib/index.js     dsh 适配：defineTool 注册三个工具
+lib/reminders.js 统一提醒：时间窗、去重、天气条件评估
+lib/index.js     dsh 适配：defineTool 注册四个工具
 cordis.patch.yml dsh bundle patch
 scripts/demo.mjs 独立演示脚本
 ```
@@ -190,6 +213,9 @@ scripts/demo.mjs 独立演示脚本
 - [x] 带伞、加衣、防风、温差、紫外线、AQI 建议
 - [x] 关心版话术 + 本地偏好档案（称呼、怕冷怕热、出行方式、伞、健康备注）
 - [x] 出行方式中性化（不止「上班」）
+- [x] 统一提醒引擎：吃药/喝水等定时提醒 + 带天气条件的提醒（降雨/降温/大风/温差/AQI）
+- [x] 分时段温度（早上/下午/晚上各多少，一天差多少）
+- [x] QQ 桥接定时唤醒（每 30 秒检查到点提醒）
 - [ ] 天气预警：暴雨、大风、高温、寒潮（按阈值与持续时间）
 - [ ] 逐小时预报：今天到底几点会下雨
 - [ ] 多城市 / 临时切换（出差、旅行）
