@@ -1,18 +1,38 @@
 # dsh-whale-weather · 小鲸鱼天气
 
-![version](https://img.shields.io/badge/version-0.3.0-blue)
+![version](https://img.shields.io/badge/version-0.3.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.3.0**（早期版本，功能还在加）。
+> 当前版本 **0.3.1**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
 免费、无需 API Key、不做任何账号绑定。
 
 **English**: [README.en.md](README.en.md)
+
+## 用在哪：直接装在 DSH 就能用，QQ 是可选的
+
+**本插件是标准 dsh 插件，不依赖 qq-bridge。**
+
+```bash
+dsh plugin --profile web add dsh-whale-weather
+```
+
+重启 dsh 后，**任何 dsh 会话**（Web、TUI、headless）都能调用全部 5 个工具。qq-bridge 只是「把 agent 接到 QQ」的可选宿主，不是运行前提。
+
+| 场景 | 能用什么 | 提醒/预警会自己响吗 |
+| --- | --- | --- |
+| 只用 dsh（Web / TUI / headless） | 全部 5 个工具 | **不会**：只在你和 agent 对话、它醒来时顺带调用 `weather_reminder(due)` / `weather_alert` 检查 |
+| dsh + qq-bridge（QQ 群/私聊） | 全部 5 个工具（需加白名单，见下） | **会**：桥接每 30 秒查一次提醒，并在 07:00 / 18:00 自动检查预警 |
+
+qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
+
+1. **执行期工具白名单**：`qq-chat-v2` preset 默认拒绝非 MCP 工具，需要把 5 个工具名加进 `SAFE_EXACT`（见「给 QQ 机器人用户」）；
+2. **定时唤醒**：dsh 自身没有定时器，提醒/预警需要一个宿主在到点唤醒 agent；qq-bridge 用 `reminders.json` 和固定时段做这件事。没有它，提醒只会在 agent 下次醒来时才被检查。
 
 ## 为什么做这个
 
@@ -26,7 +46,7 @@
 - **它只说有用的**：按影响大小排序，最多三条，不把规则表倒给用户；
 - **它是本地的**：偏好存在本机 `~/.dsh/whale-weather/profile.json`，不联网上传。
 
-## 四个工具
+## 五个工具
 
 | 工具 | 用途 |
 | --- | --- |
@@ -232,9 +252,11 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 · 空气不错（AQI 22），可以出门转转
 ```
 
-## 给 QQ 机器人用户（qq-bridge）
+## 可选：接入 QQ 机器人（qq-bridge）
 
-`qq-bridge` 的 `qq-chat-v2` preset 有一层执行期工具白名单（`plugins/qq-agent-presets/qq-tool-restrict.mjs` 的 `SAFE_EXACT`），非 MCP 工具默认会被拒绝。要把本插件用在 QQ 群里，在 `SAFE_EXACT` 里加一行：
+这一步**只有想让 agent 在 QQ 上说话时才需要**；直接用 dsh 的话可以跳过整节。
+
+接入后 qq-bridge 会额外提供定时唤醒（提醒/预警到点自己响），但它的 `qq-chat-v2` preset 有一层执行期工具白名单（`plugins/qq-agent-presets/qq-tool-restrict.mjs` 的 `SAFE_EXACT`），非 MCP 工具默认会被拒绝。要把本插件用在 QQ 里，把这 5 个工具名加进 `SAFE_EXACT`：
 
 ```js
 const SAFE_EXACT = new Set([

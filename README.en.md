@@ -1,18 +1,38 @@
 # dsh-whale-weather
 
-![version](https://img.shields.io/badge/version-0.3.0-blue)
+![version](https://img.shields.io/badge/version-0.3.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.3.0** (early, still growing).
+> Current version **0.3.1** (early, still growing).
 
 A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
 
 Free, no API key, no account binding.
 
 **中文**: [README.md](README.md)
+
+## Where it runs: plain dsh, QQ is optional
+
+**This is a standard dsh plugin and does not depend on qq-bridge.**
+
+```bash
+dsh plugin --profile web add dsh-whale-weather
+```
+
+Restart dsh and **any dsh session** (Web, TUI, headless) can call all five tools. qq-bridge is only an optional host that puts the agent on QQ.
+
+| Setup | What you get | Do reminders/alerts fire on time? |
+| --- | --- | --- |
+| dsh only (Web / TUI / headless) | all five tools | **No**: they are checked when you talk to the agent and it calls `weather_reminder(due)` / `weather_alert` |
+| dsh + qq-bridge (QQ) | all five tools (allowlist needed) | **Yes**: the bridge checks reminders every 30s and alerts at 07:00 / 18:00 |
+
+qq-bridge adds exactly two things, neither of which the plugin depends on:
+
+1. **Runtime tool allowlist**: the `qq-chat-v2` preset rejects non-MCP tools by default, so the five names must be added to `SAFE_EXACT` (see “QQ bot users”);
+2. **Scheduled wake-ups**: dsh has no timer of its own; a reminder/alert needs a host to wake the agent at the right moment. Without it, reminders are only checked the next time the agent is awake.
 
 ## Why
 
@@ -26,7 +46,7 @@ This plugin tries to say the second half: **do the math, then say it in a way th
 - **It only says what matters**: ranked by impact, at most three items, never a rules dump;
 - **It stays local**: preferences live in `~/.dsh/whale-weather/profile.json`, nothing is uploaded.
 
-## Three tools
+## Five tools
 
 | Tool | Purpose |
 | --- | --- |
@@ -114,7 +134,7 @@ Advice:
 
 (The actual output is Chinese; see README.md.)
 
-## QQ bot users (qq-bridge)
+## Optional: QQ bot users (qq-bridge)
 
 `qq-bridge`'s `qq-chat-v2` preset enforces an execution-time tool allowlist (`SAFE_EXACT` in `plugins/qq-agent-presets/qq-tool-restrict.mjs`). Non-MCP tools are rejected by default. Add one line:
 
