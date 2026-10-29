@@ -1,6 +1,6 @@
 # dsh-whale-weather · 小鲸鱼天气
 
-> 当前版本 **0.1.0**（早期版本，功能还在加）。
+> 当前版本 **0.1.1**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
@@ -14,7 +14,7 @@
 | --- | --- |
 | `weather` | 详细播报：当前天气、空气质量、未来三天、常规建议 |
 | `weather_care` | **关心版**：结合用户偏好与时段，写成一段可以直接发出去的话 |
-| `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、通勤方式、有没有带伞、健康备注 |
+| `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、出行方式、有没有带伞、健康备注 |
 
 ## 关心版长什么样
 
@@ -89,11 +89,13 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 | `nickname` | string | 希望被怎么称呼 |
 | `coldSensitive` | boolean | 怕冷，降温 3°C 就提醒 |
 | `heatSensitive` | boolean | 怕热，28°C 就提醒 |
-| `commute` | `walk` / `bike` / `transit` / `drive` / `none` | 通勤方式，影响下雨/大风的措辞 |
+| `commute` | `walk` / `bike` / `transit` / `drive` / `none` | 出行方式，影响下雨/大风的措辞 |
 | `hasUmbrella` | boolean | 是否随身带伞 |
 | `notes` | string | 健康备注，如「有鼻炎」「带娃」 |
 
-对话里直接说「查一下合肥天气」「明天要带伞吗」「我该穿什么」即可；第一次可以跟 agent 说「记住我怕冷、平时骑车上班」。`weather_care` 会优先用这些偏好。
+对话里直接说「查一下合肥天气」「明天要带伞吗」「我该穿什么」即可；第一次可以跟 agent 说「记住我怕冷、平时骑车出门」。`weather_care` 会优先用这些偏好。
+
+> 出行方式不限于上班：上学、买菜、遛狗、跑步都算，选最接近的那项就行。
 
 ## 示例输出
 

@@ -1,6 +1,6 @@
 # dsh-whale-weather
 
-> Current version **0.1.0** (early, still growing).
+> Current version **0.1.1** (early, still growing).
 
 A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
 
@@ -14,7 +14,7 @@ Free, no API key, no account binding.
 | --- | --- |
 | `weather` | Detailed report: current conditions, air quality, 3-day forecast, generic advice |
 | `weather_care` | **Caring version**: personalized by profile and time of day, ready to send as-is |
-| `weather_profile` | Read/write preferences: city, nickname, cold/heat sensitivity, commute, umbrella, health notes |
+| `weather_profile` | Read/write preferences: city, nickname, cold/heat sensitivity, how you get around, umbrella, health notes |
 
 ## What the caring version looks like
 
