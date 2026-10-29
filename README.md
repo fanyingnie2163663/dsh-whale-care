@@ -1,14 +1,48 @@
 # dsh-whale-weather · 小鲸鱼天气
 
-> 当前版本 **0.0.1**（早期版本，功能还在加）。
+> 当前版本 **0.1.0**（早期版本，功能还在加）。
 
-给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的天气插件：查当前天气、未来三天预报、空气质量，并给出**能直接用的建议**（带伞、加衣、防风、适不适合出门）。
+给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
 免费、无需 API Key、不做任何账号绑定。
 
 **English**: [README.en.md](README.en.md)
 
-## 特性
+## 三个工具
+
+| 工具 | 用途 |
+| --- | --- |
+| `weather` | 详细播报：当前天气、空气质量、未来三天、常规建议 |
+| `weather_care` | **关心版**：结合用户偏好与时段，写成一段可以直接发出去的话 |
+| `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、通勤方式、有没有带伞、健康备注 |
+
+## 关心版长什么样
+
+设置好偏好后（`weather_profile` 或让 agent 问你几句），`weather_care` 的输出是这样：
+
+> 阿宁，晚上好。合肥现在 14°C，霾，空气较差。
+> 明天最高只有 14°C，比今天低 6°C，你怕冷，外套和长裤都别省。
+> 空气较差（AQI 63），你鼻子敏感，口罩戴好。
+> 明天霾，9~14°C，降雨概率 13%，伞先放门口。
+> 早点休息，别熬太晚。
+
+它会根据这些改变措辞和阈值：
+
+| 偏好 | 效果 |
+| --- | --- |
+| `nickname` | 用对方希望被称呼的名字开头 |
+| `coldSensitive` | 降温 3°C 就提醒（默认 5°C），最低温 ≤8°C 就提醒保暖 |
+| `heatSensitive` | 28°C 就提醒补水避暑（默认 32°C） |
+| `commute` = `bike` | 下雨提醒"路滑慢点"，大风提醒"逆风别硬撑" |
+| `commute` = `walk` | 下雨提醒"路上积水绕着走" |
+| `hasUmbrella` = false | 下雨时改成"你平时老忘带伞，今天记得塞包里" |
+| `notes` 含"鼻/咽/哮喘/过敏" | 空气差时提醒"你鼻子敏感，口罩戴好" |
+| 时段 | 早上/中午/下午/晚上不同问候与收尾；晚上会额外预告明天 |
+| 信息缺失 | 下雨但不知道有没有伞时，会问一句"伞在包里吗？" |
+
+偏好存在 `$DSH_HOME/whale-weather/profile.json`（默认 `~/.dsh/whale-weather/profile.json`，权限 600）。
+
+## 详细播报特性
 
 - **当前天气**：温度、体感、天气现象（中文）、湿度、风速、能见度
 - **空气质量**：AQI + PM2.5 + 等级（优/良/中等/较差/很差）
@@ -22,7 +56,7 @@
   - 紫外线指数 ≥6 → 防晒
   - AQI ≤20 优 → 适合出去走走；20–40 良 → 可以出门；40–60 中等 → 敏感人群少出门；>60 较差 → 戴口罩减少户外
 - **中文天气描述**：wttr 自带的 `lang_zh` 实测不翻译，本插件内置 WWO 天气代码 → 中文映射（40+ 条），匹配不到才回退英文
-- 纯逻辑与 dsh 适配分离：`dsh-whale-weather/weather` 可以直接 import 到别的 agent 框架
+- 纯逻辑与 dsh 适配分离：`dsh-whale-weather/weather`、`dsh-whale-weather/care` 可以直接 import 到别的 agent 框架
 
 ## 安装
 
@@ -44,10 +78,22 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 
 | 参数 | 类型 | 说明 |
 | --- | --- | --- |
-| `city` | string（必填） | 城市名，中文/拼音/英文均可（合肥、Hefei、Tokyo） |
+| `city` | string（可选） | 城市名，中文/拼音/英文均可；不传则用 `weather_profile` 里的默认城市 |
 | `days` | integer（可选） | 预报天数 1~3，默认 3 |
 
-对话里直接说「查一下合肥天气」「明天要带伞吗」即可。
+`weather_profile` 的字段：
+
+| 字段 | 类型 | 说明 |
+| --- | --- | --- |
+| `city` | string | 默认城市 |
+| `nickname` | string | 希望被怎么称呼 |
+| `coldSensitive` | boolean | 怕冷，降温 3°C 就提醒 |
+| `heatSensitive` | boolean | 怕热，28°C 就提醒 |
+| `commute` | `walk` / `bike` / `transit` / `drive` / `none` | 通勤方式，影响下雨/大风的措辞 |
+| `hasUmbrella` | boolean | 是否随身带伞 |
+| `notes` | string | 健康备注，如「有鼻炎」「带娃」 |
+
+对话里直接说「查一下合肥天气」「明天要带伞吗」「我该穿什么」即可；第一次可以跟 agent 说「记住我怕冷、平时骑车上班」。`weather_care` 会优先用这些偏好。
 
 ## 示例输出
 
@@ -82,6 +128,8 @@ const SAFE_EXACT = new Set([
   'ask_user_question',
   'todo_write',
   'weather',            // ← dsh-whale-weather
+  'weather_care',       // ← dsh-whale-weather
+  'weather_profile',    // ← dsh-whale-weather
 ])
 ```
 
@@ -100,15 +148,18 @@ const SAFE_EXACT = new Set([
 
 ```bash
 # 不依赖 dsh，直接跑真实请求
-node scripts/demo.mjs 合肥
-node scripts/demo.mjs Tokyo 2
+node scripts/demo.mjs 合肥                # 详细播报
+node scripts/demo.mjs 合肥 care           # 关心版（默认偏好）
+node scripts/demo.mjs 合肥 care '{"nickname":"阿宁","coldSensitive":true,"commute":"bike"}'
 ```
 
 目录：
 
 ```
-lib/weather.js   纯逻辑：wttr + open-meteo + 中文映射 + 建议规则
-lib/index.js     dsh 适配：defineTool 注册 weather 工具
+lib/weather.js   纯逻辑：wttr + open-meteo + 中文映射 + 详细建议
+lib/care.js      纯逻辑：偏好 + 时段 → 关心版话术
+lib/profile.js   偏好读写（$DSH_HOME/whale-weather/profile.json）
+lib/index.js     dsh 适配：defineTool 注册三个工具
 cordis.patch.yml dsh bundle patch
 scripts/demo.mjs 独立演示脚本
 ```

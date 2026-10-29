@@ -1,12 +1,46 @@
 # dsh-whale-weather
 
-Weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): current conditions, 3-day forecast, air quality, and **actionable advice** (umbrella, clothing, wind, whether to go out).
+> Current version **0.1.0** (early, still growing).
+
+A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
 
 Free, no API key, no account binding.
 
 **中文**: [README.md](README.md)
 
-## Features
+## Three tools
+
+| Tool | Purpose |
+| --- | --- |
+| `weather` | Detailed report: current conditions, air quality, 3-day forecast, generic advice |
+| `weather_care` | **Caring version**: personalized by profile and time of day, ready to send as-is |
+| `weather_profile` | Read/write preferences: city, nickname, cold/heat sensitivity, commute, umbrella, health notes |
+
+## What the caring version looks like
+
+> A-Ning, good evening. Hefei is 14°C now, haze, air is poor.
+> Tomorrow's high is only 14°C, 6°C lower than today — you feel the cold, so take a proper jacket.
+> Air is poor (AQI 63) — your nose is sensitive, keep the mask on.
+> Tomorrow haze, 9–14°C, rain 13%, leave the umbrella by the door.
+> Get some rest, don't stay up too late.
+
+How preferences change the wording and thresholds:
+
+| Preference | Effect |
+| --- | --- |
+| `nickname` | Opens with the name the user wants to be called |
+| `coldSensitive` | Warns at a 3°C drop (5°C default), keeps-warm at ≤8°C |
+| `heatSensitive` | Heat warning at 28°C (32°C default) |
+| `commute` = `bike` | Rain → "roads are slippery, slow down"; wind → "don't fight the headwind" |
+| `commute` = `walk` | Rain → "avoid the puddles" |
+| `hasUmbrella` = false | Rain → "you always forget your umbrella, put one in your bag" |
+| `notes` with 鼻/咽/哮喘/过敏 | Poor air → "your nose is sensitive, wear the mask" |
+| Time of day | Different greeting and closing; evening adds tomorrow's preview |
+| Missing info | Rain but umbrella unknown → asks "is your umbrella in the bag?" |
+
+Preferences live in `$DSH_HOME/whale-weather/profile.json` (default `~/.dsh/whale-weather/profile.json`, mode 600).
+
+## Detailed report features
 
 - **Current**: temperature, feels-like, condition (localized to Chinese), humidity, wind, visibility
 - **Air quality**: AQI + PM2.5 + level (excellent / good / moderate / poor / very poor)
@@ -69,6 +103,8 @@ const SAFE_EXACT = new Set([
   'ask_user_question',
   'todo_write',
   'weather',            // ← dsh-whale-weather
+  'weather_care',       // ← dsh-whale-weather
+  'weather_profile',    // ← dsh-whale-weather
 ])
 ```
 
