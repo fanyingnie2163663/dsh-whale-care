@@ -1,0 +1,54 @@
+{
+  "name": "dsh-whale-weather",
+  "version": "1.0.0",
+  "description": "Weather tool for DeepSeek Harness (dsh): current conditions, 3-day forecast, air quality and practical advice (umbrella / clothing / wind / going out). Free, no API key.",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./weather": "./lib/weather.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/**/*.js",
+    "scripts/demo.mjs",
+    "cordis.patch.yml",
+    "README.md",
+    "README.en.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "demo": "node scripts/demo.mjs 合肥"
+  },
+  "keywords": [
+    "dsh",
+    "dsh-plugin",
+    "deepseek-harness",
+    "cordis",
+    "weather",
+    "weather-forecast",
+    "air-quality",
+    "wttr"
+  ],
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": ">=0.1.5-rc.1"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "author": "fanyingnie2163663",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fanyingnie2163663/dsh-whale-weather.git"
+  },
+  "homepage": "https://github.com/fanyingnie2163663/dsh-whale-weather#readme",
+  "bugs": {
+    "url": "https://github.com/fanyingnie2163663/dsh-whale-weather/issues"
+  }
+}
