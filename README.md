@@ -1,5 +1,7 @@
 # dsh-whale-weather · 小鲸鱼天气
 
+> 当前版本 **0.0.1**（早期版本，功能还在加）。
+
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的天气插件：查当前天气、未来三天预报、空气质量，并给出**能直接用的建议**（带伞、加衣、防风、适不适合出门）。
 
 免费、无需 API Key、不做任何账号绑定。

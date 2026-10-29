@@ -1,6 +1,6 @@
 {
   "name": "dsh-whale-weather",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Weather tool for DeepSeek Harness (dsh): current conditions, 3-day forecast, air quality and practical advice (umbrella / clothing / wind / going out). Free, no API key.",
   "type": "module",
   "main": "lib/index.js",
