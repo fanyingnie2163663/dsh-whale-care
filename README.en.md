@@ -1,12 +1,12 @@
 # dsh-whale-weather
 
-![version](https://img.shields.io/badge/version-0.2.0-blue)
+![version](https://img.shields.io/badge/version-0.3.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.2.0** (early, still growing).
+> Current version **0.3.0** (early, still growing).
 
 A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
 
@@ -34,6 +34,7 @@ This plugin tries to say the second half: **do the math, then say it in a way th
 | `weather_care` | **Caring version**: personalized by profile and time of day, ready to send as-is |
 | `weather_profile` | Read/write preferences: city, nickname, cold/heat sensitivity, how you get around, umbrella, health notes |
 | `weather_reminder` | One reminder engine: timed text reminders (medication, water) or weather-conditioned ones (rain/temp drop/wind/swing/AQI; speaks only when the condition matches) |
+| `weather_alert` | Extreme-weather alerts: rainstorm / gale / heat / cold wave / thunder / dust / fog / air pollution, levels yellow/orange/red, deduped per day |
 
 ## What the caring version looks like
 
@@ -125,6 +126,7 @@ const SAFE_EXACT = new Set([
   'weather_care',       // ← dsh-whale-weather
   'weather_profile',    // ← dsh-whale-weather
   'weather_reminder',   // ← dsh-whale-weather
+  'weather_alert',      // ← dsh-whale-weather
 ])
 ```
 

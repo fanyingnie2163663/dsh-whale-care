@@ -1,12 +1,12 @@
 # dsh-whale-weather · 小鲸鱼天气
 
-![version](https://img.shields.io/badge/version-0.2.0-blue)
+![version](https://img.shields.io/badge/version-0.3.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.2.0**（早期版本，功能还在加）。
+> 当前版本 **0.3.0**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
@@ -34,6 +34,7 @@
 | `weather_care` | **关心版**：结合用户偏好与时段，写成一段可以直接发出去的话 |
 | `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、出行方式、有没有带伞、健康备注 |
 | `weather_reminder` | 统一提醒：到点提醒吃药/喝水，或带天气条件的提醒（降雨/降温/大风/温差/空气质量，命中才提醒） |
+| `weather_alert` | 极端天气预警：暴雨/大风/高温/低温寒潮/雷电/沙尘/大雾/空气污染，黄橙红三级，当天不重复报 |
 
 ## 关心版长什么样
 
@@ -80,6 +81,77 @@
 **怎么真的响**：dsh 本身没有定时器，提醒靠宿主在到点时唤醒 agent。配合
 `qq-bridge`：它每 30 秒检查 `reminders.json`，到点唤醒对应会话，agent 再调用
 `weather_reminder(action=due)` 取出内容并自然说出。纯 dsh Web 环境里，agent 只会在自己醒来时顺带检查。
+
+## 天气源（provider）
+
+天气源是可换的，接口固定：`fetchWeather(city, { days })` 返回统一结构（见 `lib/providers.js` 头部注释）。
+上层（关心版/预警/提醒）不关心数据从哪来。
+
+| 源 | 说明 |
+| --- | --- |
+| `wttr`（默认） | wttr.in，中文映射在插件里做；数据全但依赖单点 |
+| `openmeteo` | Open-Meteo（地理编码 + 预报 + 空气质量），全部免费无 Key，wttr 挂了可切 |
+| `custom` | 自己写一个模块，导出 `fetchWeather` 即可 |
+
+选择方式（优先级从高到低）：
+
+1. 环境变量 `DSH_WEATHER_PROVIDER=wttr|openmeteo|custom`
+2. `$DSH_HOME/whale-weather/config.json`：
+
+```json
+{
+  "provider": "openmeteo",
+  "fallback": ["wttr"],
+  "customModule": "/opt/weather/my-provider.mjs"
+}
+```
+
+3. 默认 `wttr`，失败后自动按 `fallback` 依次重试（默认 wttr → openmeteo）。
+
+**自定义源示例**（任何能拿到温度/降雨/风的地方都可以，比如气象局接口）：
+
+```js
+// my-provider.mjs
+export async function fetchWeather(city, { days = 3 } = {}) {
+  return {
+    place: city,
+    now: { temp: 20, feels: 19, desc: '晴', humidity: 55, wind: 8, visibility: 10, uv: 4 },
+    air: { aqi: 45, pm25: 20 },                        // 可为 null
+    days: [{ label: '今天', date: '10-30', min: 12, max: 22, desc: '晴',
+             rain: 10, wind: 12, precip: 0,
+             hours: { h9: 15, h15: 22, h18: 18, h21: 14 } }],
+    fetchedAt: Date.now(),
+  };
+}
+```
+
+设置 `DSH_WEATHER_PROVIDER=custom` + `DSH_WEATHER_PROVIDER_MODULE=/绝对路径/my-provider.mjs` 即可。
+
+## 极端天气预警
+
+不依赖官方预警接口，用预报数据按阈值分级（黄/橙/红），文案会写明"预报推算"：
+
+| 类型 | 阈值（黄/橙/红） |
+| --- | --- |
+| 暴雨 | 降水 25 / 50 / 100 mm |
+| 大风 | 风速 50 / 62 / 75 km/h |
+| 高温 | 最高 35 / 37 / 40°C |
+| 低温 | 最低 -10 / -20°C（橙/红） |
+| 寒潮 | 24h 降温 8 / 12 / 16°C |
+| 雷电 / 沙尘 | 天气现象含"雷" / "沙尘"（黄） |
+| 大雾 | 能见度 ≤1km（黄）/ ≤0.5km（橙） |
+| 空气污染 | AQI 100 / 150 / 200 |
+
+- `weather_alert` 返回当天还没报过的预警并记为已报（`alerts-fired.json`），`peek=true` 只看不记；
+- `weather` 详细播报末尾会附预警；`weather_care` 会在开头带上；
+- **定时检查**：qq-bridge 每天固定时段（默认 07:00 / 18:00）唤醒一次，由 agent 调 `weather_alert`，
+  没有预警就保持安静。桥接侧用环境变量配置：
+
+```
+QQ_WEATHER_ALERT_TIMES=07:00,18:00      # 逗号分隔
+QQ_WEATHER_ALERT_TARGET=private:741934896
+QQ_WEATHER_ALERT_ENABLED=false          # 关闭
+```
 
 ## 详细播报特性
 
@@ -171,6 +243,8 @@ const SAFE_EXACT = new Set([
   'weather',            // ← dsh-whale-weather
   'weather_care',       // ← dsh-whale-weather
   'weather_profile',    // ← dsh-whale-weather
+  'weather_reminder',   // ← dsh-whale-weather
+  'weather_alert',      // ← dsh-whale-weather
 ])
 ```
 
@@ -193,16 +267,20 @@ node scripts/demo.mjs 合肥                # 详细播报
 node scripts/demo.mjs 合肥 care           # 关心版（默认偏好）
 node scripts/demo.mjs 合肥 care '{"nickname":"阿宁","coldSensitive":true,"commute":"bike"}'
 node scripts/test-reminders.mjs           # 离线单测：时间窗/去重/五种天气条件
+node scripts/test-alerts.mjs              # 离线单测：预警阈值分级 + 平静天气不误报
 ```
 
 目录：
 
 ```
-lib/weather.js   纯逻辑：wttr + open-meteo + 中文映射 + 详细建议
+lib/weather.js   纯逻辑：wttr 解析 + 中文映射 + 详细建议
+lib/openmeteo.js 纯逻辑：Open-Meteo 数据源（地理编码 + 预报 + 空气质量）
+lib/providers.js 天气源抽象：选择 / 降级 / 自定义模块
 lib/care.js      纯逻辑：偏好 + 时段 + 分时段温度 → 关心版话术
 lib/profile.js   偏好读写（$DSH_HOME/whale-weather/profile.json）
 lib/reminders.js 统一提醒：时间窗、去重、天气条件评估
-lib/index.js     dsh 适配：defineTool 注册四个工具
+lib/alerts.js    极端天气预警：阈值分级 + 当天去重
+lib/index.js     dsh 适配：defineTool 注册五个工具
 cordis.patch.yml dsh bundle patch
 scripts/demo.mjs 独立演示脚本
 ```
@@ -216,7 +294,8 @@ scripts/demo.mjs 独立演示脚本
 - [x] 统一提醒引擎：吃药/喝水等定时提醒 + 带天气条件的提醒（降雨/降温/大风/温差/AQI）
 - [x] 分时段温度（早上/下午/晚上各多少，一天差多少）
 - [x] QQ 桥接定时唤醒（每 30 秒检查到点提醒）
-- [ ] 天气预警：暴雨、大风、高温、寒潮（按阈值与持续时间）
+- [x] 极端天气预警：暴雨、大风、高温、寒潮、雷电、沙尘、大雾、空气污染
+- [x] 可切换天气源（wttr / openmeteo / 自定义），失败自动降级
 - [ ] 逐小时预报：今天到底几点会下雨
 - [ ] 多城市 / 临时切换（出差、旅行）
 - [ ] 更多关心维度：作息、带娃、养宠物
