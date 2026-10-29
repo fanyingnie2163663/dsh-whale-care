@@ -1,5 +1,11 @@
 # dsh-whale-weather
 
+![version](https://img.shields.io/badge/version-0.1.1-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
+![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
+![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
+
 > Current version **0.1.1** (early, still growing).
 
 A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
@@ -7,6 +13,18 @@ A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deep
 Free, no API key, no account binding.
 
 **中文**: [README.md](README.md)
+
+## Why
+
+A weather app says "78% chance of rain"; it does not say "you always forget your umbrella — put one in your bag".
+A voice assistant says "it will be colder tomorrow"; it does not remember that you feel the cold, bike everywhere, or have a sensitive nose.
+
+This plugin tries to say the second half: **do the math, then say it in a way the person will actually take in.**
+
+- **It knows who you are**: nickname, cold/heat sensitivity, how you get around, umbrella, health notes — all explicitly set by the user;
+- **It knows what time it is**: "take care on the way" in the morning, "get some rest" at night; no sunscreen reminders after dark;
+- **It only says what matters**: ranked by impact, at most three items, never a rules dump;
+- **It stays local**: preferences live in `~/.dsh/whale-weather/profile.json`, nothing is uploaded.
 
 ## Three tools
 

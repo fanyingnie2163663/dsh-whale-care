@@ -1,5 +1,11 @@
 # dsh-whale-weather · 小鲸鱼天气
 
+![version](https://img.shields.io/badge/version-0.1.1-blue)
+![license](https://img.shields.io/badge/license-MIT-green)
+![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
+![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
+![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
+
 > 当前版本 **0.1.1**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
@@ -7,6 +13,18 @@
 免费、无需 API Key、不做任何账号绑定。
 
 **English**: [README.en.md](README.en.md)
+
+## 为什么做这个
+
+天气应用会告诉你"降雨概率 78%"，但不会说"你平时老忘带伞，今天记得塞包里"；
+语音助手会说"明天降温"，但不会记得你怕冷、骑车上班、鼻子敏感。
+
+这个插件想补上后半句：**先算清楚，再用对方听得进去的方式说出来**。
+
+- **它知道你是谁**：称呼、怕冷/怕热、出行方式、有没有伞、健康备注，都来自用户主动设置；
+- **它知道现在几点**：早上说"路上小心"，晚上说"早点休息"，不会晚上提醒你防晒；
+- **它只说有用的**：按影响大小排序，最多三条，不把规则表倒给用户；
+- **它是本地的**：偏好存在本机 `~/.dsh/whale-weather/profile.json`，不联网上传。
 
 ## 三个工具
 
@@ -165,6 +183,19 @@ lib/index.js     dsh 适配：defineTool 注册三个工具
 cordis.patch.yml dsh bundle patch
 scripts/demo.mjs 独立演示脚本
 ```
+
+## Roadmap
+
+- [x] 当前天气 / 三天预报 / 空气质量
+- [x] 带伞、加衣、防风、温差、紫外线、AQI 建议
+- [x] 关心版话术 + 本地偏好档案（称呼、怕冷怕热、出行方式、伞、健康备注）
+- [x] 出行方式中性化（不止「上班」）
+- [ ] 天气预警：暴雨、大风、高温、寒潮（按阈值与持续时间）
+- [ ] 逐小时预报：今天到底几点会下雨
+- [ ] 多城市 / 临时切换（出差、旅行）
+- [ ] 更多关心维度：作息、带娃、养宠物
+- [ ] 主动早晚问候（需要宿主提供定时能力）
+- [ ] 英文输出（i18n）
 
 ## 许可
 
