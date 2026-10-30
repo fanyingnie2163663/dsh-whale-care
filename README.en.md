@@ -1,12 +1,12 @@
 # dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.5.0-blue)
+![version](https://img.shields.io/badge/version-0.5.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.5.0** (early, still growing).
+> Current version **0.5.1** (early, still growing).
 
 A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
 
@@ -155,6 +155,33 @@ const SAFE_EXACT = new Set([
 ```
 
 Then restart dsh; otherwise the model gets `工具 "weather" 不在 QQ 桥接白名单内`.
+
+## Optional: daily care and host impressions
+
+**Daily care**: a host (e.g. qq-bridge) can send one `weather_care` message every morning. Whether it runs, and when, is controlled by two profile fields: `dailyCare` (`false` to turn it off) and `careTime` (`HH:MM`; unset = follow the user's routine). Without a host scheduler this never fires — plain dsh only checks when the model wakes up.
+
+**Host impressions**: the plugin **does not depend on any host** — preferences live only in `~/.dsh/whale-weather/profile.json`, and everything works without any other file. If another plugin on the same machine knows the user's habits (e.g. qq-bridge's impressions of chat members), it can periodically write a **read-only snapshot** that this plugin uses to fill blanks:
+
+```json
+// $DSH_HOME/whale-weather/user-context.json (0600 recommended)
+{
+  "version": 1,
+  "updatedAt": 1793399075989,
+  "source": "qq-bridge",
+  "user": {
+    "qq": "741934896",
+    "displayName": "DDDeSt1ny",
+    "traits": ["平时骑车上班", "有鼻炎"],
+    "interactionCount": 3,
+    "lastSeenAt": 1793303867850
+  }
+}
+```
+
+- Values in `profile.json` always win; the snapshot only fills **missing** fields: commute, cold/heat sensitivity, health notes
+- Older than 7 days → ignored; missing file / broken JSON / wrong version → ignored
+- Keyword matching only (bike / walk / transit / drive, cold/heat, rhinitis / allergy …); no guessing, and free text is never pasted into the forecast message
+- Writing the snapshot is the host's job; this plugin only reads
 
 ## Data sources & privacy
 

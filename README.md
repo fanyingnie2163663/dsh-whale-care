@@ -1,12 +1,12 @@
 # dsh-whale-care · 小鲸鱼关心
 
-![version](https://img.shields.io/badge/version-0.5.0-blue)
+![version](https://img.shields.io/badge/version-0.5.1-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.5.0**（早期版本，功能还在加）。
+> 当前版本 **0.5.1**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心引擎**：教 agent 怎么真正关心一个人，而不是把一堆数据倒给对方。
 
@@ -119,6 +119,34 @@ qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
 关心时间 = 中位时间 +5 分钟；样本不足或作息太乱就回落到宿主默认时段。这样不会在你还睡着的时候弹一条。
 
 > 定时能力在宿主一侧（`qq-bridge` 的 `[care]` 定时器），插件只提供字段和话术；纯 dsh 环境没有这条。
+
+## 可选：接入其他插件的用户印象
+
+插件**不依赖任何宿主**：偏好只来自 `~/.dsh/whale-weather/profile.json`，没有别的文件也完全正常。
+
+如果同机上有别的插件知道这个人的习惯（比如 `qq-bridge` 记录的对群友的印象），它可以定期写一份**只读快照**，本插件会拿它补空缺：
+
+```json
+// $DSH_HOME/whale-weather/user-context.json（建议 600）
+{
+  "version": 1,
+  "updatedAt": 1793399075989,
+  "source": "qq-bridge",
+  "user": {
+    "qq": "741934896",
+    "displayName": "DDDeSt1ny",
+    "traits": ["平时骑车上班", "有鼻炎"],
+    "interactionCount": 3,
+    "lastSeenAt": 1793303867850
+  }
+}
+```
+
+- `profile.json` 的值永远优先，快照只补**没填**的字段：出行方式、怕冷怕热、健康备注
+- 超过 7 天没更新视为过期；文件不存在 / JSON 坏了 / 版本不对，一律当没有
+- 只做关键词匹配（骑车 / 步行 / 公交 / 开车，怕冷 / 怕热，鼻炎 / 过敏 …），
+  匹配不上就不猜，也不会把自由文本原样拼进播报
+- 写快照是宿主的事，本插件只读、不写回
 
 ## 天气源（provider）
 
