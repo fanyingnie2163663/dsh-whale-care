@@ -12,7 +12,9 @@ A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/de
 
 Weather is the first and cheapest care source — everyone steps outside, and cold, rain and air quality hit you directly. So this version uses it to get the "caring" loop right; habits (sleep, meals, water, sitting too long) can plug into the same judgment layer later.
 
-Free, no API key, no account binding.
+**The plugin is MIT and free; the weather data needs no API key and no account.**
+
+To be precise about "free": the plugin and both weather APIs cost nothing, but **every agent turn still burns model tokens**; wttr.in is a community service (can rate-limit), and Open-Meteo's free tier is non-commercial use only.
 
 **中文**: [README.md](README.md)
 
@@ -161,7 +163,7 @@ Then restart dsh; otherwise the model gets `工具 "weather" 不在 QQ 桥接白
 | Weather | [wttr.in](https://wttr.in) | city name |
 | Air quality | [open-meteo.com](https://open-meteo.com) | lat/lon returned by wttr |
 
-No accounts, keys or chat content are sent. The plugin collects and reports nothing. Both services are free public endpoints — please don't hammer them.
+No accounts, keys or chat content are sent. The plugin collects and reports nothing. Both services are free, registration-less public endpoints (wttr.in is community-run and may rate-limit; Open-Meteo's free tier is non-commercial only) — please don't hammer them.
 
 ## Development
 
