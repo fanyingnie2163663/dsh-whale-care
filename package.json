@@ -1,6 +1,6 @@
 {
   "name": "dsh-whale-weather",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "description": "Caring weather tool for DeepSeek Harness (dsh): forecast + air quality, personalized to who you are and what time it is (umbrella / clothing / wind / heat / AQI), with a local preference profile. Free, no API key.",
   "type": "module",
   "main": "lib/index.js",

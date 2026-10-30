@@ -6,7 +6,7 @@
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.3.3**（早期版本，功能还在加）。
+> 当前版本 **0.3.4**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
 
@@ -52,7 +52,7 @@ qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
 | --- | --- |
 | `weather` | 详细播报：当前天气、空气质量、未来三天、常规建议 |
 | `weather_care` | **关心版**：结合用户偏好与时段，写成一段可以直接发出去的话 |
-| `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、出行方式、有没有带伞、健康备注 |
+| `weather_profile` | 读写用户偏好：城市、称呼、怕冷/怕热、出行方式、有没有带伞、健康备注，以及每天关心的开关/时间 |
 | `weather_reminder` | 统一提醒：到点提醒吃药/喝水，或带天气条件的提醒（降雨/降温/大风/温差/空气质量，命中才提醒） |
 | `weather_alert` | 极端天气预警：暴雨/大风/高温/低温寒潮/雷电/沙尘/大雾/空气污染，黄橙红三级，当天不重复报 |
 
@@ -101,6 +101,20 @@ qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
 **怎么真的响**：dsh 本身没有定时器，提醒靠宿主在到点时唤醒 agent。配合
 `qq-bridge`：它每 30 秒检查 `reminders.json`，到点唤醒对应会话，agent 再调用
 `weather_reminder(action=due)` 取出内容并自然说出。纯 dsh Web 环境里，agent 只会在自己醒来时顺带检查。
+
+## 每日关心（可选）
+
+除了你主动问，宿主还可以每天早上替你发一条 `weather_care`。这条有没有、几点发，都由 `weather_profile` 里的两个字段控制：
+
+| 字段 | 说明 |
+| --- | --- |
+| `dailyCare` | `false` 关掉每天那条，`true`（默认）开着。嫌烦就跟 agent 说「别每天发了」 |
+| `careTime` | 固定时刻，24 小时制 `HH:MM`（如 `06:40`）。不设就跟着你的作息自适应 |
+
+**自适应**：宿主会把你每天第一条消息的时间当作起床时间样本。样本 ≥5 天且足够稳定（中位数绝对偏差 ≤45 分钟）时，
+关心时间 = 中位时间 +5 分钟；样本不足或作息太乱就回落到宿主默认时段。这样不会在你还睡着的时候弹一条。
+
+> 定时能力在宿主一侧（`qq-bridge` 的 `[care]` 定时器），插件只提供字段和话术；纯 dsh 环境没有这条。
 
 ## 天气源（provider）
 
@@ -223,6 +237,8 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 | `commute` | `walk` / `bike` / `transit` / `drive` / `none` | 出行方式，影响下雨/大风的措辞 |
 | `hasUmbrella` | boolean | 是否随身带伞 |
 | `notes` | string | 健康备注，如「有鼻炎」「带娃」 |
+| `dailyCare` | boolean | 每天早上那条主动关心的开关，`false` 关掉 |
+| `careTime` | string | 固定发送时刻 `HH:MM`；不设 = 跟着作息自适应 |
 
 对话里直接说「查一下合肥天气」「明天要带伞吗」「我该穿什么」即可；第一次可以跟 agent 说「记住我怕冷、平时骑车出门」。`weather_care` 会优先用这些偏好。
 
