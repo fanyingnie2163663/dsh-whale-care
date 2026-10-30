@@ -1,14 +1,16 @@
-# dsh-whale-weather · 小鲸鱼天气
+# dsh-whale-care · 小鲸鱼关心
 
-![version](https://img.shields.io/badge/version-0.3.3-blue)
+![version](https://img.shields.io/badge/version-0.4.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.3.4**（早期版本，功能还在加）。
+> 当前版本 **0.4.0**（早期版本，功能还在加）。
 
-给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心型**天气插件：不只是报天气，而是结合对方是谁、此刻几点，把"今天该注意什么"说成一句人话。
+给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心引擎**：教 agent 怎么真正关心一个人，而不是把一堆数据倒给对方。
+
+天气是第一个、也是最便宜直接的关心来源——每个人每天都要出门，冷暖、下雨、空气质量都能直接影响你；所以这一版先用它把"关心"这件事跑通。以后还可以接作息、吃饭、喝水、久坐这些来源，判断逻辑是同一套。
 
 免费、无需 API Key、不做任何账号绑定。
 
@@ -19,7 +21,7 @@
 **本插件是标准 dsh 插件，不依赖 qq-bridge。**
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 重启 dsh 后，**任何 dsh 会话**（Web、TUI、headless）都能调用全部 5 个工具。qq-bridge 只是「把 agent 接到 QQ」的可选宿主，不是运行前提。
@@ -201,18 +203,18 @@ QQ_WEATHER_ALERT_ENABLED=false          # 关闭
   - 紫外线指数 ≥6 → 防晒
   - AQI ≤20 优 → 适合出去走走；20–40 良 → 可以出门；40–60 中等 → 敏感人群少出门；>60 较差 → 戴口罩减少户外
 - **中文天气描述**：wttr 自带的 `lang_zh` 实测不翻译，本插件内置 WWO 天气代码 → 中文映射（40+ 条），匹配不到才回退英文
-- 纯逻辑与 dsh 适配分离：`dsh-whale-weather/weather`、`dsh-whale-weather/care` 可以直接 import 到别的 agent 框架
+- 纯逻辑与 dsh 适配分离：`dsh-whale-care/weather`、`dsh-whale-care/care` 可以直接 import 到别的 agent 框架
 
 ## 安装
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 或直接从 GitHub 装：
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 装完重启 dsh（`dsh web`）生效。之后 agent 的工具列表里会出现 **`weather`**。
@@ -278,11 +280,11 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
 const SAFE_EXACT = new Set([
   'ask_user_question',
   'todo_write',
-  'weather',            // ← dsh-whale-weather
-  'weather_care',       // ← dsh-whale-weather
-  'weather_profile',    // ← dsh-whale-weather
-  'weather_reminder',   // ← dsh-whale-weather
-  'weather_alert',      // ← dsh-whale-weather
+  'weather',            // ← dsh-whale-care
+  'weather_care',       // ← dsh-whale-care
+  'weather_profile',    // ← dsh-whale-care
+  'weather_reminder',   // ← dsh-whale-care
+  'weather_alert',      // ← dsh-whale-care
 ])
 ```
 

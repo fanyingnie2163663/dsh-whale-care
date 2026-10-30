@@ -1,14 +1,16 @@
-# dsh-whale-weather
+# dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.3.4-blue)
+![version](https://img.shields.io/badge/version-0.4.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.3.4** (early, still growing).
+> Current version **0.4.0** (early, still growing).
 
-A **caring** weather plugin for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it does not just report the forecast — it turns it into a short, human message tailored to who the user is and what time it is.
+A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
+
+Weather is the first and cheapest care source — everyone steps outside, and cold, rain and air quality hit you directly. So this version uses it to get the "caring" loop right; habits (sleep, meals, water, sitting too long) can plug into the same judgment layer later.
 
 Free, no API key, no account binding.
 
@@ -19,7 +21,7 @@ Free, no API key, no account binding.
 **This is a standard dsh plugin and does not depend on qq-bridge.**
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 Restart dsh and **any dsh session** (Web, TUI, headless) can call all five tools. qq-bridge is only an optional host that puts the agent on QQ.
@@ -94,18 +96,18 @@ Preferences live in `$DSH_HOME/whale-weather/profile.json` (default `~/.dsh/whal
   - UV index ≥6 → sun protection
   - AQI ≤20 → great for a walk; 20–40 → fine to go out; 40–60 → sensitive groups stay in; >60 → mask, less outdoor time
 - **Chinese condition mapping**: wttr's `lang_zh` does not actually translate; this plugin ships a 40+ entry WWO → Chinese map, falling back to the original text
-- Core logic is decoupled from dsh: import `dsh-whale-weather/weather` from any agent framework
+- Core logic is decoupled from dsh: import `dsh-whale-care/weather` from any agent framework
 
 ## Install
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 or straight from GitHub:
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-weather
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 Restart dsh (`dsh web`) afterwards. The agent's tool list will then contain **`weather`**.
@@ -142,11 +144,11 @@ Advice:
 const SAFE_EXACT = new Set([
   'ask_user_question',
   'todo_write',
-  'weather',            // ← dsh-whale-weather
-  'weather_care',       // ← dsh-whale-weather
-  'weather_profile',    // ← dsh-whale-weather
-  'weather_reminder',   // ← dsh-whale-weather
-  'weather_alert',      // ← dsh-whale-weather
+  'weather',            // ← dsh-whale-care
+  'weather_care',       // ← dsh-whale-care
+  'weather_profile',    // ← dsh-whale-care
+  'weather_reminder',   // ← dsh-whale-care
+  'weather_alert',      // ← dsh-whale-care
 ])
 ```
 

@@ -1,7 +1,7 @@
 {
-  "name": "dsh-whale-weather",
-  "version": "0.3.4",
-  "description": "Caring weather tool for DeepSeek Harness (dsh): forecast + air quality, personalized to who you are and what time it is (umbrella / clothing / wind / heat / AQI), with a local preference profile. Free, no API key.",
+  "name": "dsh-whale-care",
+  "version": "0.4.0",
+  "description": "Care engine for DeepSeek Harness (dsh): teaches the assistant to actually care about one person, with weather as its first and cheapest source. Personalized forecast + air quality, umbrella/clothing/wind/heat/AQI advice, reminders, extreme-weather alerts, local preference profile. Free, no API key.",
   "type": "module",
   "main": "lib/index.js",
   "exports": {
@@ -38,6 +38,7 @@
     "weather-alerts",
     "reminders",
     "care",
+    "companion",
     "assistant"
   ],
   "license": "MIT",
@@ -55,10 +56,10 @@
   "author": "fanyingnie2163663",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/fanyingnie2163663/dsh-whale-weather.git"
+    "url": "git+https://github.com/fanyingnie2163663/dsh-whale-care.git"
   },
-  "homepage": "https://github.com/fanyingnie2163663/dsh-whale-weather#readme",
+  "homepage": "https://github.com/fanyingnie2163663/dsh-whale-care#readme",
   "bugs": {
-    "url": "https://github.com/fanyingnie2163663/dsh-whale-weather/issues"
+    "url": "https://github.com/fanyingnie2163663/dsh-whale-care/issues"
   }
 }
