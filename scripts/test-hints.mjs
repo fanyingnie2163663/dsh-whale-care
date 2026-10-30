@@ -33,7 +33,17 @@ const ctx = (traits, extra = {}) => ({
   version: 1,
   updatedAt: Date.now(),
   source: 'qq-bridge',
-  user: { qq: '741934896', displayName: 'DDDeSt1ny', traits, interactionCount: 3, lastSeenAt: Date.now() - 3600_000, ...extra },
+  user: {
+    qq: '741934896',
+    displayName: 'DDDeSt1ny',
+    traits,
+    interactionCount: 3,
+    lastSeenAt: Date.now() - 3600_000,
+    // loadUserContext() 会把 source/updatedAt 并进 user，这里保持一致
+    source: 'qq-bridge',
+    updatedAt: Date.now(),
+    ...extra,
+  },
 });
 
 // ── 从自由文本提取线索 ─────────────────────────────────────────
@@ -62,6 +72,8 @@ assert(kept.notes === '我自己的备注', 'notes 不被覆盖');
 makeHome(ctx(['平时开车', '怕热']));
 const eff = await effectiveProfile();
 assert(eff.commute === 'drive' && eff.heatSensitive === true, 'effectiveProfile 合并快照');
+const loadedCtx = await loadUserContext();
+assert(loadedCtx?.source === 'qq-bridge' && loadedCtx?.updatedAt > 0, 'loadUserContext 带出 source / updatedAt');
 
 // 快照过期（8 天前）→ 忽略
 makeHome({ ...ctx(['平时开车']), updatedAt: Date.now() - 8 * 24 * 3600 * 1000 });
@@ -89,6 +101,7 @@ assert(JSON.stringify(effNoCtx) === JSON.stringify(rawNoCtx), '没有上下文�
 // ── 展示 ──────────────────────────────────────────────────────
 const desc = describeProfile(mergeHints({ nickname: '老爹' }, hintsFromContext(ctx(['有鼻炎']).user)));
 assert(desc.includes('印象'), 'describeProfile 会展示来自其他插件的印象');
+assert(desc.includes('来自 qq-bridge'), 'describeProfile 标注印象来源');
 
 // 清理
 for (const dir of homes) { try { rmSync(dir, { recursive: true, force: true }); } catch {} }

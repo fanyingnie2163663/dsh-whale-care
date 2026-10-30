@@ -1,12 +1,12 @@
 # dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.5.1-blue)
+![version](https://img.shields.io/badge/version-0.5.2-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.5.1** (early, still growing).
+> Current version **0.5.2** (early, still growing).
 
 A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
 
@@ -114,6 +114,11 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 
 Restart dsh (`dsh web`) afterwards. The agent's tool list will then contain **`weather`**.
 
+After installing, ask the agent to run `weather_profile(action="get")` once: if another plugin on this
+machine already stored preferences/impressions (e.g. qq-bridge's member notes — see
+"Optional: daily care and host impressions"), the output will include an impression line, and the agent
+can use it instead of asking the same questions again.
+
 ## Usage
 
 | Param | Type | Description |
@@ -161,6 +166,9 @@ Then restart dsh; otherwise the model gets `工具 "weather" 不在 QQ 桥接白
 **Daily care**: a host (e.g. qq-bridge) can send one `weather_care` message every morning. Whether it runs, and when, is controlled by two profile fields: `dailyCare` (`false` to turn it off) and `careTime` (`HH:MM`; unset = follow the user's routine). Without a host scheduler this never fires — plain dsh only checks when the model wakes up.
 
 **Host impressions**: the plugin **does not depend on any host** — preferences live only in `~/.dsh/whale-weather/profile.json`, and everything works without any other file. If another plugin on the same machine knows the user's habits (e.g. qq-bridge's impressions of chat members), it can periodically write a **read-only snapshot** that this plugin uses to fill blanks:
+
+> That file is defined as an **impression snapshot written by an external plugin** — not this plugin's own data. This plugin only reads it, never writes back, and never requires it.
+> After installing, have the agent run `weather_profile(action="get")` once: if impressions exist, use them; otherwise just ask.
 
 ```json
 // $DSH_HOME/whale-weather/user-context.json (0600 recommended)

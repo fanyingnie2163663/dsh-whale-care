@@ -1,12 +1,12 @@
 # dsh-whale-care · 小鲸鱼关心
 
-![version](https://img.shields.io/badge/version-0.5.1-blue)
+![version](https://img.shields.io/badge/version-0.5.2-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.5.1**（早期版本，功能还在加）。
+> 当前版本 **0.5.2**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心引擎**：教 agent 怎么真正关心一个人，而不是把一堆数据倒给对方。
 
@@ -125,6 +125,9 @@ qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
 插件**不依赖任何宿主**：偏好只来自 `~/.dsh/whale-weather/profile.json`，没有别的文件也完全正常。
 
 如果同机上有别的插件知道这个人的习惯（比如 `qq-bridge` 记录的对群友的印象），它可以定期写一份**只读快照**，本插件会拿它补空缺：
+
+> 这份文件的定义是「**外部插件写的用户印象快照**」，不是本插件自己的数据文件；本插件只读、不写回，也不依赖它。
+> 装好插件后让 agent 先 `weather_profile(action="get")` 看一眼——有印象就直接用，没有就正常问。
 
 ```json
 // $DSH_HOME/whale-weather/user-context.json（建议 600）
@@ -248,6 +251,10 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 装完重启 dsh（`dsh web`）生效。之后 agent 的工具列表里会出现 **`weather`**。
+
+装好之后建议让 agent 先跑一次 `weather_profile(action="get")`：如果这台机器上已经有别的插件
+存过你的偏好/印象（比如 qq-bridge 的群友印象，见「可选：接入其他插件的用户印象」），
+返回里会出现「印象（来自 xxx）」，agent 可以直接参考，不用把同样的问题再问一遍。
 
 ## 用法
 
