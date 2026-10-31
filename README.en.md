@@ -1,12 +1,12 @@
 # dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.5.5-blue)
+![version](https://img.shields.io/badge/version-0.5.6-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.5.5** (early, still growing).
+> Current version **0.5.6** (early, still growing).
 
 A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
 
@@ -62,10 +62,11 @@ This plugin tries to say the second half: **do the math, then say it in a way th
 
 ## What the caring version looks like
 
-> A-Ning, good evening. Hefei is 14°C now, haze, air is poor.
-> Tomorrow's high is only 14°C, 6°C lower than today — you feel the cold, so take a proper jacket.
-> Air is poor (AQI 63) — your nose is sensitive, keep the mask on.
-> Tomorrow haze, 9–14°C, rain 13%, leave the umbrella by the door.
+> A-Ning, good evening. Hefei is 14°C now (feels like 13°C), haze, humidity 69%.
+> Tomorrow 9–14°C. Wear a light jacket or trench coat by day; a padded coat and scarf in the morning and evening.
+> Tomorrow's high is only 14°C, 6°C lower than today — you feel the cold, so don't skip the jacket and trousers.
+> Air is poor (AQI 63) — your nose is sensitive, keep the mask on tomorrow.
+> Tomorrow haze.
 > Get some rest, don't stay up too late.
 
 How preferences change the wording and thresholds:
@@ -80,7 +81,6 @@ How preferences change the wording and thresholds:
 | `hasUmbrella` = false | Rain → "you always forget your umbrella, put one in your bag" |
 | `notes` with 鼻/咽/哮喘/过敏 | Poor air → "your nose is sensitive, wear the mask" |
 | Time of day | Different greeting and closing; evening adds tomorrow's preview |
-| Missing info | Rain but umbrella unknown → asks "is your umbrella in the bag?" |
 
 Preferences live in `$DSH_HOME/whale-weather/profile.json` (default `~/.dsh/whale-weather/profile.json`, mode 600).
 

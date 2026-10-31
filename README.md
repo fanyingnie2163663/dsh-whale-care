@@ -1,12 +1,12 @@
 # dsh-whale-care · 小鲸鱼关心
 
-![version](https://img.shields.io/badge/version-0.5.5-blue)
+![version](https://img.shields.io/badge/version-0.5.6-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.5.5**（早期版本，功能还在加）。
+> 当前版本 **0.5.6**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心引擎**：教 agent 怎么真正关心一个人，而不是把一堆数据倒给对方。
 
@@ -64,10 +64,11 @@ qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
 
 设置好偏好后（`weather_profile` 或让 agent 问你几句），`weather_care` 的输出是这样：
 
-> 阿宁，晚上好。合肥现在 14°C，霾，空气较差。
+> 阿宁，晚上好。合肥现在 14°C（体感 13°C），霾，湿度 69%。
+> 明天 9~14°C。白天穿夹克或风衣，早晚棉服，围巾戴上。
 > 明天最高只有 14°C，比今天低 6°C，你怕冷，外套和长裤都别省。
-> 空气较差（AQI 63），你鼻子敏感，口罩戴好。
-> 明天霾，9~14°C，降雨概率 13%，伞先放门口。
+> 空气较差（AQI 63），你鼻子敏感，明天口罩戴好。
+> 明天霾。
 > 早点休息，别熬太晚。
 
 它会根据这些改变措辞和阈值：
@@ -82,7 +83,6 @@ qq-bridge 额外做的只有两件事，都不是插件本身的依赖：
 | `hasUmbrella` = false | 下雨时改成"你平时老忘带伞，今天记得塞包里" |
 | `notes` 含"鼻/咽/哮喘/过敏" | 空气差时提醒"你鼻子敏感，口罩戴好" |
 | 时段 | 早上/中午/下午/晚上不同问候与收尾；晚上会额外预告明天 |
-| 信息缺失 | 下雨但不知道有没有伞时，会问一句"伞在包里吗？" |
 
 偏好存在 `$DSH_HOME/whale-weather/profile.json`（默认 `~/.dsh/whale-weather/profile.json`，权限 600）。
 
