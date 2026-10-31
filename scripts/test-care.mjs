@@ -90,3 +90,25 @@ const mkHumid = (humidity) => ({
 assert(buildCareBrief(mkHumid(20), { nickname: '老爹' }, at).includes('湿度只有 20%'), '湿度 20% 提醒干燥');
 assert(buildCareBrief(mkHumid(92), { nickname: '老爹' }, at).includes('有点闷'), '湿度 92% 提醒闷');
 assert(buildCareBrief(mkHumid(55), { nickname: '老爹' }, at).includes('湿度 55%'), '湿度适中时只播报不额外提醒');
+
+// 文案去重：晚上不要把明天的温度区间说两遍
+const eveningData = {
+  place: '合肥',
+  now: { temp: 16, feels: 14, desc: '霾', humidity: 56, uv: 2 },
+  air: { aqi: 30, pm25: 10 },
+  days: [
+    { label: '今天', date: '10-31', min: 14, max: 24, desc: '多云', rain: 18, wind: 22, precip: 0, hours: {} },
+    { label: '明天', date: '11-01', min: 12, max: 20, desc: '小雨', rain: 81, wind: 26, precip: 5, hours: {} },
+  ],
+};
+const evening = buildCareBrief(eveningData, { nickname: '老爹' }, { now: new Date(2026, 9, 31, 21, 0) });
+assert((evening.match(/明天 12~20°C/g) ?? []).length === 1, '晚上只报一次明天的温度区间');
+assert(evening.includes('明天出门戴口罩') || !evening.includes('口罩'), '晚上不说「现在出门戴口罩」');
+
+// 已经提醒过带伞，就不再追问「伞在包里吗」
+const rainy = buildCareBrief(
+  { ...eveningData, now: { ...eveningData.now, desc: '小雨' }, days: [{ ...eveningData.days[0], desc: '小雨', rain: 85 }, eveningData.days[1]] },
+  { nickname: '老爹' },
+  { now: new Date(2026, 9, 31, 7, 30) },
+);
+assert(!rainy.includes('伞在包里吗'), '带伞提醒与追问不重复');

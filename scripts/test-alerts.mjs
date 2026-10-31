@@ -29,6 +29,10 @@ assert(has('aqi', '红'), 'AQI 165（欧洲 AQI）→ 空气污染红色');
 assert(evaluateAlerts({ now: {}, air: { aqi: 70 }, days: [] }).some((a) => a.type === 'aqi' && a.level === '黄'), 'AQI 70 → 空气污染黄色');
 assert(!evaluateAlerts({ now: {}, air: { aqi: 55 }, days: [] }).some((a) => a.type === 'aqi'), 'AQI 55 不触发空气预警');
 
+// 天气源可能不给降雨概率：不能把 undefined 拼进预警文案
+const noRain = evaluateAlerts({ now: {}, air: null, days: [{ label: '今天', precip: 30, wind: 5, max: 20, min: 10, desc: '雨' }] });
+assert(noRain.length === 1 && !/undefined/.test(noRain[0].detail), '缺降雨概率字段时预警文案不出现 undefined');
+
 const calm = evaluateAlerts({
   now: { temp: 20, visibility: 10 },
   air: { aqi: 30 },
@@ -38,3 +42,7 @@ assert(calm.length === 0, '平静天气不产生预警');
 
 console.log(`\n共 ${alerts.length} 条预警，今天=${todayKey()}：`);
 for (const a of alerts) console.log(' -', formatAlert(a));
+
+// 雷电/沙尘文案不要出现「天气现象：」这种双冒号
+const thunderText = formatAlert(evaluateAlerts({ now: {}, air: null, days: [{ label: '今天', min: 10, max: 20, desc: '雷阵雨', rain: 50, wind: 10, precip: 0 }] })[0]);
+assert(thunderText.includes('天气现象为'), '雷电预警用「天气现象为」而不是双冒号');
