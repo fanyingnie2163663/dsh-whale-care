@@ -1,6 +1,6 @@
 {
   "name": "dsh-whale-care",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Care engine for DeepSeek Harness (dsh): teaches the assistant to actually care about one person, with weather as its first and cheapest source. Personalized forecast + air quality, umbrella/clothing/wind/heat/AQI advice, reminders, extreme-weather alerts, local preference profile. Free, no API key.",
   "type": "module",
   "main": "lib/index.js",
@@ -47,10 +47,11 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": "^22.19.0 || >=24.0.0"
+    "node": "^22.19.0 || >=24.0.0",
+    "dsh": ">=0.1.2-rc.1 <0.2.0 || >=0.1.5-alpha.1 <0.2.0 || >=0.1.6-0 <0.2.0 || >=0.1.7-0 <0.2.0 || >=0.2.0-0 <0.3.0 || >=0.2.1-0 <0.3.0"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-tools": ">=0.1.5-rc.1"
+    "@deepseek-ai/dsh-tools": ">=0.1.2-rc.1 <0.2.0 || >=0.1.5-alpha.1 <0.2.0 || >=0.1.6-0 <0.2.0 || >=0.1.7-0 <0.2.0 || >=0.2.0-0 <0.3.0 || >=0.2.1-0 <0.3.0"
   },
   "dsh": {
     "bundle": {

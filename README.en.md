@@ -1,12 +1,12 @@
 # dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.5.6-blue)
+![version](https://img.shields.io/badge/version-0.5.7-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
-![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
+![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.5.6** (early, still growing).
+> Current version **0.5.7** (early, still growing).
 
 A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
 
@@ -113,6 +113,10 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 Restart dsh (`dsh web`) afterwards. The agent's tool list will then contain **`weather`**.
+
+**Supported DSH versions**: `0.1.2-rc.1` through `0.2.x`. `package.json` declares the peer range per
+generation (`>=0.1.2-rc.1 <0.2.0 || … || >=0.2.1-0 <0.3.0`) plus `engines.dsh`; `0.3` is untested, and the
+peer gate refuses the install instead of letting it crash at runtime.
 
 After installing, ask the agent to run `weather_profile(action="get")` once: if another plugin on this
 machine already stored preferences/impressions (e.g. qq-bridge's member notes — see

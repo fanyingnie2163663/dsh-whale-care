@@ -1,12 +1,12 @@
 # dsh-whale-care · 小鲸鱼关心
 
-![version](https://img.shields.io/badge/version-0.5.6-blue)
+![version](https://img.shields.io/badge/version-0.5.7-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
-![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
+![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> 当前版本 **0.5.6**（早期版本，功能还在加）。
+> 当前版本 **0.5.7**（早期版本，功能还在加）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心引擎**：教 agent 怎么真正关心一个人，而不是把一堆数据倒给对方。
 
@@ -251,6 +251,10 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
 装完重启 dsh（`dsh web`）生效。之后 agent 的工具列表里会出现 **`weather`**。
+
+**支持的 DSH 版本**：`0.1.2-rc.1` ~ `0.2.x`。`package.json` 里按世代写了 peer 区间
+（`>=0.1.2-rc.1 <0.2.0 || … || >=0.2.1-0 <0.3.0`），`engines.dsh` 也做了声明；
+`0.3` 还没验证过，peer 门禁会拒装而不是装完崩溃。
 
 装好之后建议让 agent 先跑一次 `weather_profile(action="get")`：如果这台机器上已经有别的插件
 存过你的偏好/印象（比如 qq-bridge 的群友印象，见「可选：接入其他插件的用户印象」），
