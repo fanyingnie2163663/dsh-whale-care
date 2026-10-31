@@ -1,12 +1,12 @@
 # dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.5.3-blue)
+![version](https://img.shields.io/badge/version-0.5.4-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-%E2%89%A50.1.5--rc.1-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
 
-> Current version **0.5.3** (early, still growing).
+> Current version **0.5.4** (early, still growing).
 
 A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
 

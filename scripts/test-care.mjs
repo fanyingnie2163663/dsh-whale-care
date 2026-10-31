@@ -26,6 +26,8 @@ const brief = buildCareBrief(data, { city: '合肥', nickname: '老爹' }, { now
 console.log('\n—— 话术 ——\n' + brief + '\n');
 
 assert(brief.startsWith('老爹，'), '称呼「老爹」出现在开头');
+assert(brief.includes('（体感 14°C）'), '开场带体感温度');
+assert(brief.includes('湿度 56%'), '开场带空气湿度');
 assert(brief.includes('今天 14~24°C'), '温度给区间且带单位（今天 14~24°C）');
 assert(brief.includes('温差 10°C'), '温差用 min/max 算（14→24 = 10°C）');
 assert(!brief.includes('一天差'), '不再出现「一天差 10°C」这种和分时段数字打架的说法');
@@ -77,3 +79,14 @@ const at = { now: new Date(2026, 9, 31, 9, 0) };
 assert(!buildCareBrief(mkData(50), { nickname: '老爹' }, at).includes('口罩'), 'AQI 50（中等）：普通人不劝戴口罩');
 assert(buildCareBrief(mkData(50), { nickname: '老爹', notes: '有鼻炎' }, at).includes('口罩'), 'AQI 50：鼻子敏感的人会提醒戴口罩');
 assert(buildCareBrief(mkData(70), { nickname: '老爹' }, at).includes('出门戴口罩'), 'AQI 70（较差）：普通人提醒戴口罩');
+
+// 湿度：太低要提醒干，太高要提醒闷
+const mkHumid = (humidity) => ({
+  place: '合肥',
+  now: { temp: 20, feels: 20, desc: '晴', humidity, uv: 2 },
+  air: null,
+  days: [{ label: '今天', date: '10-31', min: 16, max: 22, desc: '晴', rain: 0, wind: 10, precip: 0, hours: {} }],
+});
+assert(buildCareBrief(mkHumid(20), { nickname: '老爹' }, at).includes('湿度只有 20%'), '湿度 20% 提醒干燥');
+assert(buildCareBrief(mkHumid(92), { nickname: '老爹' }, at).includes('有点闷'), '湿度 92% 提醒闷');
+assert(buildCareBrief(mkHumid(55), { nickname: '老爹' }, at).includes('湿度 55%'), '湿度适中时只播报不额外提醒');
