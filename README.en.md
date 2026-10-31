@@ -44,13 +44,7 @@ No API key, no signup; preferences stay in `~/.dsh/whale-weather/profile.json` o
 
 ## Where it runs: plain dsh, QQ is optional
 
-**This is a standard dsh plugin and does not depend on qq-bridge.**
-
-```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
-```
-
-Restart dsh and **any dsh session** (Web, TUI, headless) can call all five tools. qq-bridge is only an optional host that puts the agent on QQ.
+**This is a standard dsh plugin and does not depend on qq-bridge.** Restart dsh and **any dsh session** (Web, TUI, headless) can call all five tools. qq-bridge is only an optional host that puts the agent on QQ.
 
 | Setup | What you get | Do reminders/alerts fire on time? |
 | --- | --- | --- |
@@ -124,19 +118,9 @@ Preferences live in `$DSH_HOME/whale-weather/profile.json` (default `~/.dsh/whal
 - **Chinese condition mapping**: wttr's `lang_zh` does not actually translate; this plugin ships a 40+ entry WWO → Chinese map, falling back to the original text
 - Core logic is decoupled from dsh: import `dsh-whale-care/weather` from any agent framework
 
-## Install
+## Install notes
 
-```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
-```
-
-or straight from GitHub:
-
-```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
-```
-
-Restart dsh (`dsh web`) afterwards. The agent's tool list will then contain **`weather`**.
+The install command is in **Quick start** above. Restart dsh afterwards; the agent's tool list will then contain **`weather`**.
 
 **Supported DSH versions**: `0.1.2-rc.1` through `0.2.x`. `package.json` declares the peer range per
 generation (`>=0.1.2-rc.1 <0.2.0 || … || >=0.2.1-0 <0.3.0`) plus `engines.dsh`; `0.3` is untested, and the
