@@ -61,7 +61,7 @@ qq-bridge adds exactly two things, neither of which the plugin depends on:
 A weather app says "78% chance of rain"; it does not say "you always forget your umbrella — put one in your bag".
 A voice assistant says "it will be colder tomorrow"; it does not remember that you feel the cold, bike everywhere, or have a sensitive nose.
 
-This plugin tries to say the second half: **do the math, then say it in a way the person will actually take in.**
+This plugin tries to say the second half: **work out what actually matters, then say it the way someone who cares would.**
 
 - **It knows who you are**: nickname, cold/heat sensitivity, how you get around, umbrella, health notes — all explicitly set by the user;
 - **It knows what time it is**: "take care on the way" in the morning, "get some rest" at night; no sunscreen reminders after dark;
