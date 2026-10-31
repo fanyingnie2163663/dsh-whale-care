@@ -4,7 +4,7 @@
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
-![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
+![node](https://img.shields.io/badge/node-22_%2F_24-339933)
 
 > Current version **0.5.7** (early, still growing).
 
@@ -17,6 +17,30 @@ Weather is the first and cheapest care source — everyone steps outside, and co
 To be precise about "free": the plugin and both weather APIs cost nothing, but **every agent turn still burns model tokens**; wttr.in is a community service (can rate-limit), and Open-Meteo's free tier is non-commercial use only.
 
 **中文**: [README.md](README.md)
+
+## Quick start
+
+```bash
+# 1. install
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
+
+# 2. restart dsh, then tell the agent who you are
+"Remember: I'm in Hefei, call me A-Ning, I feel the cold, I bike to work, I have a sensitive nose."
+
+# 3. then just ask
+"Umbrella today?" "What should I wear tomorrow?" "Which day this week is coldest?"
+```
+
+No API key, no signup; preferences stay in `~/.dsh/whale-weather/profile.json` on your machine.
+
+**How it differs from a plain weather plugin**:
+
+| Plain weather plugin | This one |
+| --- | --- |
+| `rain 78%` | "Rain today (78%) — take an umbrella." |
+| `tomorrow 12–20°C` | "Tomorrow 12–20°C — a jacket by day, a sweater in the morning." |
+| Same answer for everyone | Remembers you feel the cold, bike to work, have a sensitive nose |
+| Silent until asked | Sends one message each morning (switchable, follows your routine) |
 
 ## Where it runs: plain dsh, QQ is optional
 

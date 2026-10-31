@@ -4,7 +4,7 @@
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
-![node](https://img.shields.io/badge/node-%E2%89%A520-339933)
+![node](https://img.shields.io/badge/node-22_%2F_24-339933)
 
 > 当前版本 **0.5.7**（早期版本，功能还在加）。
 
@@ -17,6 +17,30 @@
 要说清楚"免费"指什么：插件本身和两个天气接口不花钱，但 **agent 回答你时仍然消耗模型额度**；另外 wttr.in 是社区服务（可能限流），Open-Meteo 的免费条款仅限非商业用途。
 
 **English**: [README.en.md](README.en.md)
+
+## 快速开始
+
+```bash
+# 1. 装
+dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
+
+# 2. 重启 dsh 后，让 agent 记一下你是谁
+「记住：我在合肥，叫我阿宁，我怕冷，平时骑车上班，有鼻炎」
+
+# 3. 之后随时问
+「今天要带伞吗」「明天穿什么」「这周哪天最冷」
+```
+
+不需要 API Key，不需要注册，偏好只写在本机 `~/.dsh/whale-weather/profile.json`。
+
+**它和普通天气插件的区别**：
+
+| 普通天气插件 | 这个小鲸鱼 |
+| --- | --- |
+| `降雨概率 78%` | 「今天有雨（78%），出门带把伞」 |
+| `明天 12~20°C` | 「明天 12~20°C，白天穿夹克，早晚加件毛衣」 |
+| 换个人问，答案一样 | 记得你怕冷、骑车上班、鼻子敏感 |
+| 你不问，它不说话 | 每天早上主动说一条（可关、跟着你的作息走） |
 
 ## 用在哪：直接装在 DSH 就能用，QQ 是可选的
 
@@ -347,23 +371,29 @@ const SAFE_EXACT = new Set([
 node scripts/demo.mjs 合肥                # 详细播报
 node scripts/demo.mjs 合肥 care           # 关心版（默认偏好）
 node scripts/demo.mjs 合肥 care '{"nickname":"阿宁","coldSensitive":true,"commute":"bike"}'
-node scripts/test-reminders.mjs           # 离线单测：时间窗/去重/五种天气条件
-node scripts/test-alerts.mjs              # 离线单测：预警阈值分级 + 平静天气不误报
+
+# 离线单测（不需要网络和 API key）
+for f in scripts/test-*.mjs; do node "$f"; done   # 7 个文件 / 111 条断言
+
+# 清单自检：包名 / 插件 id / exports / 版本 / 安装命令是否一致
+# （本地开发工具，不在仓库里；见 AGENTS.md）
 ```
 
 目录：
 
 ```
-lib/weather.js   纯逻辑：wttr 解析 + 中文映射 + 详细建议
-lib/openmeteo.js 纯逻辑：Open-Meteo 数据源（地理编码 + 预报 + 空气质量）
-lib/providers.js 天气源抽象：选择 / 降级 / 自定义模块
-lib/care.js      纯逻辑：偏好 + 时段 + 分时段温度 → 关心版话术
-lib/profile.js   偏好读写（$DSH_HOME/whale-weather/profile.json）
-lib/reminders.js 统一提醒：时间窗、去重、天气条件评估
-lib/alerts.js    极端天气预警：阈值分级 + 当天去重
-lib/index.js     dsh 适配：defineTool 注册五个工具
-cordis.patch.yml dsh bundle patch
-scripts/demo.mjs 独立演示脚本
+lib/weather.js       纯逻辑：wttr 解析 + 中文映射 + 详细建议
+lib/openmeteo.js     纯逻辑：Open-Meteo 数据源（地理编码 + 预报 + 空气质量）
+lib/providers.js     天气源抽象：选择 / 降级 / 自定义模块
+lib/care.js          纯逻辑：偏好 + 时段 + 分时段温度 → 关心版话术
+lib/profile.js       偏好读写（$DSH_HOME/whale-weather/profile.json）
+lib/user-context.js  可选：读取其他插件写的用户印象快照（只读、7 天过期）
+lib/reminders.js     统一提醒：时间窗、去重、天气条件评估
+lib/alerts.js        极端天气预警：阈值分级 + 当天去重
+lib/index.js         dsh 适配：defineTool 注册五个工具
+cordis.patch.yml     dsh bundle patch
+scripts/demo.mjs     独立演示脚本
+scripts/test-*.mjs   离线单测（7 个文件 / 111 条断言）
 ```
 
 ## Roadmap
@@ -377,10 +407,13 @@ scripts/demo.mjs 独立演示脚本
 - [x] QQ 桥接定时唤醒（每 30 秒检查到点提醒）
 - [x] 极端天气预警：暴雨、大风、高温、寒潮、雷电、沙尘、大雾、空气污染
 - [x] 可切换天气源（wttr / openmeteo / 自定义），失败自动降级
+- [x] 穿衣建议（按温度带分白天/早晚；怕冷怕热各调 2°C）
+- [x] 每日主动关心（可开关、跟随作息；宿主直发时不经过模型）
+- [x] 可选的用户印象接入：其他插件写 `user-context.json`，偏好档案优先
+- [x] 上架 awesome-dsh-plugin 插件市场
 - [ ] 逐小时预报：今天到底几点会下雨
 - [ ] 多城市 / 临时切换（出差、旅行）
 - [ ] 更多关心维度：作息、带娃、养宠物
-- [ ] 主动早晚问候（需要宿主提供定时能力）
 - [ ] 英文输出（i18n）
 
 ## 许可
