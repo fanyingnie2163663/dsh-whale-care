@@ -1,8 +1,10 @@
 // 离线单测：不联网，只验证提醒的时间/去重/天气条件判断。
 import path from 'node:path';
+import os from 'node:os';
 import process from 'node:process';
 
-process.env.DSH_HOME = path.resolve('tmp-dsh-test');
+// 用系统临时目录，别在仓库里留 tmp-dsh-test/（以前会）
+process.env.DSH_HOME = path.join(os.tmpdir(), `dsh-whale-care-test-${process.pid}`);
 const R = await import('../lib/reminders.js');
 const { addReminder, loadReminders, saveReminders, dueReminders, evaluateWeatherReminder, describeReminder } = R;
 
@@ -45,6 +47,20 @@ assert(aqiEval.matched && aqiEval.line.includes('72'), `空气质量命中：${a
 
 const notMatch = evaluateWeatherReminder({ ...rain, weather: { type: 'rain', threshold: 90 } }, data);
 assert(!notMatch.matched, '阈值 90% 时不应命中');
+
+// 周几：非法值必须报错，不能静默存成「永不触发」
+let badDays = '';
+try { await addReminder({ label: 'x', time: '08:00', days: [0] }); } catch (e) { badDays = e.message; }
+assert(/1~7/.test(badDays), 'days=[0] 抛错（1=周一 … 7=周日）');
+const sunday = await addReminder({ label: '周日提醒', time: '09:00', days: [7] });
+assert(Array.isArray(sunday.days) && sunday.days.length === 1 && sunday.days[0] === 7, 'days=[7] 存成周日');
+
+// 时间格式归一化
+const early = await addReminder({ label: '早起', time: '7:05' });
+assert(early.time === '07:05', '时间 7:05 归一化成 07:05');
+
+// 读侧兜底：手改出来的 days=[] 不应命中（防"设了但永不响"）
+assert(dueReminders([{ id: 'z', time: '09:00', enabled: true, days: [] }], at(9, 0)).length === 0, 'days=[] 不会被当成每天');
 
 console.log('\n提醒列表：');
 for (const it of await loadReminders()) console.log(' -', describeReminder(it));

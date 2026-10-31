@@ -24,7 +24,10 @@ assert(has('heat', '橙'), '最高 38°C → 高温橙色');
 assert(has('thunder', '黄'), '雷阵雨 → 雷电黄色');
 assert(has('coldwave', '红'), '24h 降温 16°C → 寒潮红色');
 assert(has('fog', '黄'), '能见度 0.8km → 大雾黄色');
-assert(has('aqi', '橙'), 'AQI 165 → 空气污染橙色');
+// 数据源是欧洲 AQI：60/80/100 三档。165 已经超过 100 → 红。
+assert(has('aqi', '红'), 'AQI 165（欧洲 AQI）→ 空气污染红色');
+assert(evaluateAlerts({ now: {}, air: { aqi: 70 }, days: [] }).some((a) => a.type === 'aqi' && a.level === '黄'), 'AQI 70 → 空气污染黄色');
+assert(!evaluateAlerts({ now: {}, air: { aqi: 55 }, days: [] }).some((a) => a.type === 'aqi'), 'AQI 55 不触发空气预警');
 
 const calm = evaluateAlerts({
   now: { temp: 20, visibility: 10 },

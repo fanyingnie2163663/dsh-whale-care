@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" width="128" height="128" role="img" aria-label="Whale Care">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5B9CF8"/>
+      <stop offset="1" stop-color="#2E5FD0"/>
+    </linearGradient>
+  </defs>
+  <rect width="128" height="128" rx="30" fill="url(#bg)"/>
+  <g fill="#FFFFFF">
+    <circle cx="44" cy="58" r="18"/>
+    <circle cx="70" cy="50" r="22"/>
+    <circle cx="92" cy="62" r="15"/>
+    <rect x="30" y="58" width="78" height="20" rx="10"/>
+  </g>
+  <path d="M64 100c-6.4 0-11.6-4.7-11.6-10.5 0-7.4 9.4-13.6 11.6-15.7 2.2 2.1 11.6 8.3 11.6 15.7C75.6 95.3 70.4 100 64 100z" fill="#FF6B8A"/>
+</svg>

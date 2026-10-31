@@ -65,3 +65,15 @@ const calm = buildCareBrief(
 );
 assert(!calm.includes('温差'), '温差 4°C 的平静日子不提温差');
 assert(calm.includes('白天穿长袖衬衫或薄卫衣'), '22°C 平静日子的穿衣建议正常');
+
+// 口罩建议按欧洲 AQI 分档：普通人 >60 才劝，敏感人群 41 就劝
+const mkData = (aqi) => ({
+  place: '合肥',
+  now: { temp: 20, feels: 20, desc: '晴', humidity: 50, uv: 2 },
+  air: { aqi, pm25: 30 },
+  days: [{ label: '今天', date: '10-31', min: 16, max: 22, desc: '晴', rain: 0, wind: 10, precip: 0, hours: {} }],
+});
+const at = { now: new Date(2026, 9, 31, 9, 0) };
+assert(!buildCareBrief(mkData(50), { nickname: '老爹' }, at).includes('口罩'), 'AQI 50（中等）：普通人不劝戴口罩');
+assert(buildCareBrief(mkData(50), { nickname: '老爹', notes: '有鼻炎' }, at).includes('口罩'), 'AQI 50：鼻子敏感的人会提醒戴口罩');
+assert(buildCareBrief(mkData(70), { nickname: '老爹' }, at).includes('出门戴口罩'), 'AQI 70（较差）：普通人提醒戴口罩');

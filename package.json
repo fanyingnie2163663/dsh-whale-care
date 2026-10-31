@@ -1,6 +1,6 @@
 {
   "name": "dsh-whale-care",
-  "version": "0.5.2",
+  "version": "0.5.3",
   "description": "Care engine for DeepSeek Harness (dsh): teaches the assistant to actually care about one person, with weather as its first and cheapest source. Personalized forecast + air quality, umbrella/clothing/wind/heat/AQI advice, reminders, extreme-weather alerts, local preference profile. Free, no API key.",
   "type": "module",
   "main": "lib/index.js",
@@ -13,12 +13,16 @@
     "./providers": "./lib/providers.js",
     "./reminders": "./lib/reminders.js",
     "./alerts": "./lib/alerts.js",
-    "./openmeteo": "./lib/openmeteo.js"
+    "./openmeteo": "./lib/openmeteo.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./assets/icon.svg"
   },
   "files": [
-    "lib/**/*.js",
+    "lib",
     "scripts/demo.mjs",
     "cordis.patch.yml",
+    "locale",
+    "assets/icon.svg",
     "README.md",
     "README.en.md",
     "LICENSE"
@@ -43,7 +47,7 @@
   ],
   "license": "MIT",
   "engines": {
-    "node": ">=20"
+    "node": "^22.19.0 || >=24.0.0"
   },
   "peerDependencies": {
     "@deepseek-ai/dsh-tools": ">=0.1.5-rc.1"
@@ -51,7 +55,8 @@
   "dsh": {
     "bundle": {
       "patch": "./cordis.patch.yml"
-    }
+    },
+    "manifestVersion": 1
   },
   "author": "fanyingnie2163663",
   "repository": {
