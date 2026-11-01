@@ -1,12 +1,12 @@
 # dsh-whale-care
 
-![version](https://img.shields.io/badge/version-0.5.7-blue)
+![version](https://img.shields.io/badge/version-0.6.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-22_%2F_24-339933)
 
-> Current version **0.5.7** (early, still growing).
+> Current version **0.6.0** (reminders 2.0 / travel city / mood / weather card).
 
 A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
 
@@ -44,12 +44,12 @@ No API key, no signup; preferences stay in `~/.dsh/whale-weather/profile.json` o
 
 ## Where it runs: plain dsh, QQ is optional
 
-**This is a standard dsh plugin and does not depend on qq-bridge.** Restart dsh and **any dsh session** (Web, TUI, headless) can call all five tools. qq-bridge is only an optional host that puts the agent on QQ.
+**This is a standard dsh plugin and does not depend on qq-bridge.** Restart dsh and **any dsh session** (Web, TUI, headless) can call all seven tools. qq-bridge is only an optional host that puts the agent on QQ.
 
 | Setup | What you get | Do reminders/alerts fire on time? |
 | --- | --- | --- |
-| dsh only (Web / TUI / headless) | all five tools | **No**: they are checked when you talk to the agent and it calls `weather_reminder(due)` / `weather_alert` |
-| dsh + qq-bridge (QQ) | all five tools (allowlist needed) | **Yes**: the bridge checks reminders every 30s and alerts at 07:00 / 18:00 |
+| dsh only (Web / TUI / headless) | all seven tools | **No**: they are checked when you talk to the agent and it calls `weather_reminder(due)` / `weather_alert` |
+| dsh + qq-bridge (QQ) | all seven tools (allowlist needed) | **Yes**: the bridge checks reminders every 30s and alerts at 07:00 / 18:00 |
 
 qq-bridge adds exactly two things, neither of which the plugin depends on:
 
@@ -68,15 +68,17 @@ This plugin tries to say the second half: **work out what actually matters, then
 - **It only says what matters**: ranked by impact, at most three items, never a rules dump;
 - **It stays local**: preferences live in `~/.dsh/whale-weather/profile.json`, nothing is uploaded.
 
-## Five tools
+## Seven tools
 
 | Tool | Purpose |
 | --- | --- |
 | `weather` | Detailed report: current conditions, air quality, 3-day forecast, generic advice |
-| `weather_care` | **Caring version**: personalized by profile and time of day, ready to send as-is |
-| `weather_profile` | Read/write preferences: city, nickname, cold/heat sensitivity, how you get around, umbrella, health notes |
-| `weather_reminder` | One reminder engine: timed text reminders (medication, water) or weather-conditioned ones (rain/temp drop/wind/swing/AQI; speaks only when the condition matches) |
+| `weather_care` | **Caring version**: personalized by profile and time of day; includes today's reminders, festival/solar term and hourly rain peak |
+| `weather_profile` | Read/write preferences: city / travel city, nickname, cold/heat sensitivity, how you get around, umbrella, health notes |
+| `weather_reminder` | One reminder engine: daily / weekdays / one-off date / yearly (birthdays), or weather-conditioned ones (rain/temp drop/wind/swing/AQI; speaks only when the condition matches) |
 | `weather_alert` | Extreme-weather alerts: rainstorm / gale / heat / cold wave / thunder / dust / fog / air pollution, levels yellow/orange/red, deduped per day |
+| `weather_mood` | Mood score (1–5) log, recent entries and trend |
+| `weather_card` | Render a 720×980 weather card (SVG) for the host to convert and send |
 
 ## What the caring version looks like
 

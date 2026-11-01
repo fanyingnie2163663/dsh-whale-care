@@ -62,5 +62,43 @@ assert(early.time === '07:05', '时间 7:05 归一化成 07:05');
 // 读侧兜底：手改出来的 days=[] 不应命中（防"设了但永不响"）
 assert(dueReminders([{ id: 'z', time: '09:00', enabled: true, days: [] }], at(9, 0)).length === 0, 'days=[] 不会被当成每天');
 
+// ── 0.6.0：一次性 / 每年 ─────────────────────────────────────────────
+const on = (y, mo, d, h, mi) => new Date(y, mo - 1, d, h, mi);
+const once = await addReminder({ label: '明天九点开会', time: '09:00', date: '2026-12-25' });
+assert(once.date === '2026-12-25' && once.days === null, '一次性提醒存 date，不落 days');
+assert(dueReminders([once], on(2026, 12, 25, 9, 5)).length === 1, '12-25 09:05 一次性提醒应触发');
+assert(dueReminders([once], on(2026, 12, 26, 9, 5)).length === 0, '12-26 不再触发一次性提醒');
+assert(dueReminders([once], on(2026, 12, 25, 8, 0)).length === 0, '12-25 08:00 未到点不触发');
+assert(describeReminder(once).includes('2026-12-25 一次'), '一次性提醒的列表文案带日期');
+
+const yearly = await addReminder({ label: '妈妈生日', time: '08:00', yearly: '11-20' });
+assert(dueReminders([yearly], on(2026, 11, 20, 8, 1)).length === 1, '每年 11-20 应触发');
+assert(dueReminders([yearly], on(2027, 11, 20, 8, 1)).length === 1, '第二年的 11-20 也应触发');
+assert(dueReminders([yearly], on(2026, 11, 21, 8, 1)).length === 0, '11-21 不触发');
+assert(describeReminder(yearly).includes('每年 11-20'), '每年提醒的列表文案带 MM-DD');
+
+// 互斥 / 非法值必须报错，不能静默降级成"每天"
+let conflict = '';
+try { await addReminder({ label: 'x', time: '08:00', date: '2026-12-25', days: [1] }); } catch (e) { conflict = e.message; }
+assert(/不能同时/.test(conflict), 'date + days 同时传 → 报错');
+let badDate = '';
+try { await addReminder({ label: 'x', time: '08:00', date: '2026-02-30' }); } catch (e) { badDate = e.message; }
+assert(/真实日期/.test(badDate), '2026-02-30 不是真实日期 → 报错');
+let past = '';
+try { await addReminder({ label: 'x', time: '08:00', date: '2020-01-01' }); } catch (e) { past = e.message; }
+assert(/已经过去/.test(past), '过去的日期 → 报错');
+
+// 今日预告：每天 / 周几 / 一次性 / 每年都要能筛对
+const dayList = [
+  { id: 'd', time: '08:00', enabled: true, label: '每天' },
+  { id: 'w', time: '09:00', enabled: true, days: [5], label: '周五' },
+  { id: 'o', time: '10:00', enabled: true, date: '2026-12-25', label: '一次性' },
+  { id: 'y', time: '11:00', enabled: true, yearly: '12-25', label: '每年' },
+];
+const xmas = R.remindersForDay(dayList, on(2026, 12, 25, 7, 0));
+assert(xmas.length === 4, `12-25 当天 4 条提醒都应进预告（实际 ${xmas.length}）`);
+const ordinary = R.remindersForDay(dayList, on(2026, 12, 24, 7, 0));
+assert(ordinary.length === 1 && ordinary[0].id === 'd', '12-24 只预告每天那条');
+
 console.log('\n提醒列表：');
 for (const it of await loadReminders()) console.log(' -', describeReminder(it));

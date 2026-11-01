@@ -1,12 +1,12 @@
 # dsh-whale-care · 小鲸鱼关心
 
-![version](https://img.shields.io/badge/version-0.5.7-blue)
+![version](https://img.shields.io/badge/version-0.6.0-blue)
 ![license](https://img.shields.io/badge/license-MIT-green)
 ![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
 ![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
 ![node](https://img.shields.io/badge/node-22_%2F_24-339933)
 
-> 当前版本 **0.5.7**（早期版本，功能还在加）。
+> 当前版本 **0.6.0**（提醒 2.0 / 多城市 / 情绪 / 天气卡片）。
 
 给 [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness) 的**关心引擎**：教 agent 怎么真正关心一个人，而不是把一堆数据倒给对方。
 
@@ -65,15 +65,17 @@ qq-bridge 额外只提供两件事，都不是插件依赖：
 - **只说有用的**：按影响排序，最多三条，不把规则表倒给你；
 - **只存本地**：偏好在本机 `~/.dsh/whale-weather/profile.json`，不联网上传。
 
-## 五个工具
+## 七个工具
 
 | 工具 | 用途 |
 | --- | --- |
 | `weather` | 详细播报：当前天气、空气质量、三天预报、常规建议 |
-| `weather_care` | **关心版**：按偏好和时段，写成一句能直接发出去的话 |
-| `weather_profile` | 偏好读写：城市、称呼、怕冷怕热、出行方式、伞、健康备注，外加每日关心开关/时间 |
-| `weather_reminder` | 到点提醒吃药喝水，或按天气条件提醒（降雨/降温/大风/温差/AQI，命中才说） |
+| `weather_care` | **关心版**：按偏好和时段，写成一句能直接发出去的话；带今日提醒、节日/节气、逐小时降雨峰值 |
+| `weather_profile` | 偏好读写：城市/出差城市、称呼、怕冷怕热、出行方式、伞、健康备注，外加每日关心开关/时间 |
+| `weather_reminder` | 每天 / 每周几 / 一次性 / 每年 的提醒，或按天气条件提醒（降雨/降温/大风/温差/AQI，命中才说） |
 | `weather_alert` | 极端天气预警（暴雨/大风/高温/寒潮/雷电/沙尘/大雾/空气污染），黄橙红三级，当天不重复 |
+| `weather_mood` | 情绪打分（1~5）记录、回看与趋势 |
+| `weather_card` | 生成 720×980 天气卡片（SVG），交给宿主转图发送 |
 
 ## 关心版长什么样
 
@@ -114,12 +116,43 @@ qq-bridge 额外只提供两件事，都不是插件依赖：
 
 - 天气条件在到期那一刻评估，所以昨晚设的提醒不会拿旧预报说错话；
 - 同一天不会重复提醒（`lastFiredDate`），有 2 小时补发窗口（08:00 的提醒 09:30 唤醒也还能补）；
-- 可以按星期几设置（`days: [1,2,3,4,5]` 只在工作日）；
+- 时间表四选一：每天（不传）、每周几（`days: [1..7]`）、一次性（`date: "2026-11-20"`）、每年（`yearly: "11-20"`，生日/纪念日）；
 - 提醒存在 `$DSH_HOME/whale-weather/reminders.json`（600）。
 
 **怎么真的响**：dsh 本身没有定时器，提醒靠宿主在到点时唤醒 agent。配合
 `qq-bridge`：它每 30 秒检查 `reminders.json`，到点唤醒对应会话，agent 再调用
 `weather_reminder(action=due)` 取出内容并自然说出。纯 dsh Web 环境里，agent 只会在自己醒来时顺带检查。
+
+## 出差 / 临时城市
+
+`weather_profile` 除 `city` 外还支持：
+
+| 字段 | 说明 |
+| --- | --- |
+| `travelCity` | 出差/旅行所在城市；设了就优先用它查天气 |
+| `travelUntil` | 用到哪天（`YYYY-MM-DD`，含当天）；只传 `travelCity` 默认 3 天 |
+
+- 出差期间 `city` 自动切换成 `travelCity`，默认城市保留在 `defaultCity`，话术里仍能说"回合肥"；
+- 到 `travelUntil` 次日自动回退默认城市；
+- 说"结束了/回来了"时把 `travelCity` 传空字符串即可取消。
+
+## 情绪记录
+
+`weather_mood` 把"今天怎么样"变成可回看的趋势：
+
+- `action=log`：`score` 1~5（1=很差，5=很好），可选 `note`；只记用户真实说过的，不替用户打分；
+- `action=list`：最近 10 条；
+- `action=trend`：最近 N 天每天均分 + 总评。
+
+存 `$DSH_HOME/whale-weather/mood.json`（600，最多 500 条）；同一分钟重复提交只留一条。
+
+## 天气卡片
+
+`weather_card` 生成一张 720×980 的 SVG：当前温度、今天区间、降雨/风力/空气、穿衣与带伞建议、明日预告。
+
+- 存到 `$DSH_HOME/whale-weather/cards/weather-*.svg`；
+- 宿主（如 qq-bridge）用 `ffmpeg`（librsvg + Noto CJK）转 PNG 后发送；
+- 没有 ffmpeg/字体时返回可读错误，不影响文字播报。
 
 ## 每日关心（可选）
 
@@ -134,6 +167,7 @@ qq-bridge 额外只提供两件事，都不是插件依赖：
 关心时间 = 中位时间 +5 分钟；样本不足或作息太乱就回落到宿主默认时段。这样不会在你还睡着的时候弹一条。
 
 > 定时能力在宿主一侧（`qq-bridge` 的 `[care]` 定时器），插件只提供字段和话术；纯 dsh 环境没有这条。
+> 0.6.0 起，宿主直发时会把**今天要响的提醒**、**节日/节气**和**逐小时降雨峰值**一并拼进这段关心；qq-bridge 还会在文字后附一张天气卡片。
 
 ## 可选：接入其他插件的用户印象
 
@@ -368,12 +402,15 @@ lib/providers.js     天气源抽象：选择 / 降级 / 自定义模块
 lib/care.js          纯逻辑：偏好 + 时段 + 分时段温度 → 关心版话术
 lib/profile.js       偏好读写（$DSH_HOME/whale-weather/profile.json）
 lib/user-context.js  可选：读取其他插件写的用户印象快照（只读、7 天过期）
-lib/reminders.js     统一提醒：时间窗、去重、天气条件评估
+lib/reminders.js     统一提醒：每天/每周/一次性/每年、去重、天气条件评估
 lib/alerts.js        极端天气预警：阈值分级 + 当天去重
-lib/index.js         dsh 适配：defineTool 注册五个工具
+lib/festivals.js     节日/节气表（2026–2027）
+lib/mood.js          情绪记录与趋势
+lib/card.js          天气卡片 SVG
+lib/index.js         dsh 适配：defineTool 注册七个工具
 cordis.patch.yml     dsh bundle patch
 scripts/demo.mjs     独立演示脚本
-scripts/test-*.mjs   离线单测（7 个文件 / 111 条断言）
+scripts/test-*.mjs   离线单测（10 个文件）
 ```
 
 ## Roadmap
@@ -391,10 +428,14 @@ scripts/test-*.mjs   离线单测（7 个文件 / 111 条断言）
 - [x] 每日主动关心（可开关、跟随作息；宿主直发时不经过模型）
 - [x] 可选的用户印象接入：其他插件写 `user-context.json`，偏好档案优先
 - [x] 上架 awesome-dsh-plugin 插件市场
-- [ ] 逐小时预报：今天到底几点会下雨
-- [ ] 多城市 / 临时切换（出差、旅行）
-- [ ] 更多关心维度：作息、带娃、养宠物
+- [x] 一次性 / 每年提醒（`date` / `yearly`，生日与纪念日）
+- [x] 逐小时降雨：今天几点最可能下雨（wttr 3 小时段 / open-meteo 逐小时）
+- [x] 多城市 / 临时切换（出差、旅行，到期自动回退）
+- [x] 天气卡片（SVG，宿主转图发送）
+- [x] 情绪记录与趋势（`weather_mood`）
+- [ ] 农历生日 / 农历节日
 - [ ] 英文输出（i18n）
+- [ ] 更多关心维度：作息、带娃、养宠物
 
 ## 许可
 

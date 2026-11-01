@@ -112,3 +112,45 @@ const rainy = buildCareBrief(
   { now: new Date(2026, 9, 31, 7, 30) },
 );
 assert(!rainy.includes('伞在包里吗'), '带伞提醒与追问不重复');
+
+// ── 0.6.0：逐小时降雨 / 节日节气 / 今日提醒 ─────────────────────────
+const hourlyData = {
+  place: '合肥',
+  now: { temp: 20, feels: 20, desc: '多云', humidity: 55, uv: 2 },
+  air: null,
+  days: [
+    {
+      label: '今天', date: '11-01', min: 16, max: 24, desc: '多云', rain: 20, wind: 10, precip: 0,
+      hours: { h9: 19, h15: 24, h21: 20 },
+      rainHours: [{ hour: 9, prob: 10 }, { hour: 15, prob: 65 }, { hour: 16, prob: 40 }],
+    },
+  ],
+};
+const hourlyBrief = buildCareBrief(hourlyData, { nickname: '老爹' }, { now: new Date(2026, 10, 1, 9, 0) });
+assert(hourlyBrief.includes('15 点前后降雨概率 65%'), '全天 20% 但 15 点有 65% 峰值 → 单独提醒');
+assert(hourlyBrief.includes('带把伞'), '逐小时峰值命中 → 提醒带伞');
+
+const stormData = {
+  ...hourlyData,
+  days: [{ ...hourlyData.days[0], desc: '小雨', rain: 80, rainHours: [{ hour: 16, prob: 90 }] }],
+};
+const stormBrief = buildCareBrief(stormData, { nickname: '老爹' }, { now: new Date(2026, 10, 1, 9, 0) });
+assert(stormBrief.includes('16 点前后概率最高 90%'), '全天有雨时，把峰值时段补进同一句');
+
+const lidong = buildCareBrief(hourlyData, { nickname: '老爹' }, { now: new Date(2026, 10, 7, 9, 0) });
+assert(lidong.includes('今天是立冬'), '11-07 自动带出立冬');
+const spring = buildCareBrief(hourlyData, { nickname: '老爹' }, { now: new Date(2026, 1, 17, 9, 0) });
+assert(spring.includes('今天是春节'), '2026-02-17 自动带出春节');
+const noFest = buildCareBrief(hourlyData, { nickname: '老爹' }, { now: new Date(2026, 10, 7, 9, 0), festival: false });
+assert(!noFest.includes('立冬'), 'festival=false 可以关掉节日句');
+
+const withReminders = buildCareBrief(hourlyData, { nickname: '老爹' }, {
+  now: new Date(2026, 10, 1, 9, 0),
+  reminders: [{ time: '08:00', label: '吃药' }, { time: '21:00', label: '喝水' }],
+});
+assert(withReminders.includes('今天要记得：08:00 吃药；21:00 喝水'), '今日提醒接进每日关心');
+const manyReminders = buildCareBrief(hourlyData, { nickname: '老爹' }, {
+  now: new Date(2026, 10, 1, 9, 0),
+  reminders: ['a', 'b', 'c', 'd'],
+});
+assert(manyReminders.includes('等 4 条'), '超过 3 条提醒时用「等 N 条」收口');
