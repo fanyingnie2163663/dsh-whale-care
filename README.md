@@ -40,6 +40,10 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 | 换个人问，答案一样 | 记得你怕冷、骑车上班、鼻子敏感 |
 | 你不问，它不说话 | 每天早上主动说一条（可关、跟着你的作息走） |
 
+![同一天气，两种说法](https://cdn.jsdelivr.net/gh/fanyingnie2163663/dsh-whale-care@main/assets/screenshot-compare.png)
+
+<sub>左边是接口原始数据，右边是插件的真实输出（Open-Meteo，合肥，2026-11-03，偏好档：怕冷 / 骑车 / 有鼻炎）。</sub>
+
 ## 用在哪：dsh 装了就能用，QQ 可选
 
 **标准 dsh 插件，不依赖 qq-bridge。** 重启 dsh 后，任何会话（Web / TUI / headless）都能用全部 5 个工具；qq-bridge 只是「把 agent 接到 QQ」的可选宿主。
