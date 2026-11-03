@@ -19,8 +19,8 @@
 ## 快速开始
 
 ```bash
-# 1. 装
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
+# 1. 装（预构建包，不需要本地编译）
+dsh plugin --profile web add "https://github.com/fanyingnie2163663/dsh-whale-care/releases/download/v0.5.7/dsh-whale-care-0.5.7.tgz"
 
 # 2. 重启 dsh 后，让 agent 记一下你是谁
 「记住：我在合肥，叫我阿宁，我怕冷，平时骑车上班，有鼻炎」
