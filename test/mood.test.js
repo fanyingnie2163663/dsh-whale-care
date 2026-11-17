@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：情绪记录与趋势。
 import path from 'node:path';
 import os from 'node:os';
@@ -6,11 +10,9 @@ import process from 'node:process';
 process.env.DSH_HOME = path.join(os.tmpdir(), `dsh-whale-care-mood-${process.pid}`);
 const M = await import('../lib/mood.js');
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('mood', async () => {
 let bad = '';
 try { await M.addMood({ score: 6 }); } catch (e) { bad = e.message; }
 assert(/1~5/.test(bad), 'score=6 报错');
@@ -21,7 +23,7 @@ assert(/1~5/.test(bad), 'score=0 报错');
 const at = new Date(2026, 10, 1, 21, 30).getTime();
 const a = await M.addMood({ score: 4, note: '还行', at });
 assert(a.date === '2026-11-01' && a.score === 4, '记录日期/分数');
-const dup = await M.addMood({ score: 4, note: '还行', at: at + 1000 });
+await M.addMood({ score: 4, note: '还行', at: at + 1000 });
 assert((await M.loadMoods()).length === 1, '同一分钟重复提交只留一条');
 
 await M.addMood({ score: 2, at: new Date(2026, 10, 2, 22, 0).getTime() });
@@ -41,3 +43,6 @@ assert(M.describeMood(entries[0]).includes('还行'), 'describe 带备注');
 const old = [...entries, { id: 'old', at: new Date(2026, 9, 1, 9, 0).getTime(), date: '2026-10-01', score: 1, note: '' }];
 const short = M.moodTrend(old, { days: 7, now: new Date(2026, 10, 2, 23, 30) });
 assert(short.length === 2 && !short.some((d) => d.date === '2026-10-01'), '窗口外旧记录被排除');
+
+  nodeAssert.equal(total(), 11, '断言总数 11')
+})

@@ -1,11 +1,13 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：用构造的天气数据验证预警阈值与去重。
 import { evaluateAlerts, formatAlert, todayKey } from '../lib/alerts.js';
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('alerts', async () => {
 const data = {
   now: { temp: 36, visibility: 0.8, uv: 8 },
   air: { aqi: 165, pm25: 120 },
@@ -46,3 +48,6 @@ for (const a of alerts) console.log(' -', formatAlert(a));
 // 雷电/沙尘文案不要出现「天气现象：」这种双冒号
 const thunderText = formatAlert(evaluateAlerts({ now: {}, air: null, days: [{ label: '今天', min: 10, max: 20, desc: '雷阵雨', rain: 50, wind: 10, precip: 0 }] })[0]);
 assert(thunderText.includes('天气现象为'), '雷电预警用「天气现象为」而不是双冒号');
+
+  nodeAssert.equal(total(), 12, '断言总数 12')
+})

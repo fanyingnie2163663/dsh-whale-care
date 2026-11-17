@@ -65,7 +65,7 @@ qq-bridge 额外只提供两件事，都不是插件依赖：
 - **只说有用的**：按影响排序，最多三条，不把规则表倒给你；
 - **只存本地**：偏好在本机 `~/.dsh/whale-weather/profile.json`，不联网上传。
 
-## 七个工具
+## 八个工具
 
 | 工具 | 用途 |
 | --- | --- |
@@ -76,6 +76,7 @@ qq-bridge 额外只提供两件事，都不是插件依赖：
 | `weather_alert` | 极端天气预警（暴雨/大风/高温/寒潮/雷电/沙尘/大雾/空气污染），黄橙红三级，当天不重复 |
 | `weather_mood` | 情绪打分（1~5）记录、回看与趋势 |
 | `weather_card` | 生成 720×980 天气卡片（SVG），交给宿主转图发送 |
+| `care_brief` | **短版关心**：从天气信号里挑最多三条 + 今天到点的提醒，写成一段短话；聊天里随口说一句时用 |
 
 ## 关心版长什么样
 
@@ -386,11 +387,11 @@ node scripts/demo.mjs 合肥                # 详细播报
 node scripts/demo.mjs 合肥 care           # 关心版（默认偏好）
 node scripts/demo.mjs 合肥 care '{"nickname":"阿宁","coldSensitive":true,"commute":"bike"}'
 
-# 离线单测（不需要网络和 API key）
-for f in scripts/test-*.mjs; do node "$f"; done   # 7 个文件 / 111 条断言
+# 一条命令验证：类型 + lint + 单测（不需要网络和 API key）
+npm run check
 
-# 清单自检：包名 / 插件 id / exports / 版本 / 安装命令是否一致
-# （本地开发工具，不在仓库里；见 AGENTS.md）
+# 只跑单测
+npm test                                  # node --test，15 个文件：168 条迁移断言 + 引擎/日历/接线新增
 ```
 
 目录：
@@ -407,10 +408,11 @@ lib/alerts.js        极端天气预警：阈值分级 + 当天去重
 lib/festivals.js     节日/节气表（2026–2027）
 lib/mood.js          情绪记录与趋势
 lib/card.js          天气卡片 SVG
-lib/index.js         dsh 适配：defineTool 注册七个工具
+lib/index.js         dsh 适配：只做接线（25 行）
+lib/tools/*.js       八个工具各一个文件：weather / care / care-brief / profile / reminder / alert / mood / card
 cordis.patch.yml     dsh bundle patch
 scripts/demo.mjs     独立演示脚本
-scripts/test-*.mjs   离线单测（10 个文件）
+test/*.test.js       node --test 单测（15 个文件：168 条迁移断言 + 引擎/日历/接线新增）
 ```
 
 ## Roadmap

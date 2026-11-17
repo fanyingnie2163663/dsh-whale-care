@@ -44,12 +44,12 @@ No API key, no signup; preferences stay in `~/.dsh/whale-weather/profile.json` o
 
 ## Where it runs: plain dsh, QQ is optional
 
-**This is a standard dsh plugin and does not depend on qq-bridge.** Restart dsh and **any dsh session** (Web, TUI, headless) can call all seven tools. qq-bridge is only an optional host that puts the agent on QQ.
+**This is a standard dsh plugin and does not depend on qq-bridge.** Restart dsh and **any dsh session** (Web, TUI, headless) can call all eight tools. qq-bridge is only an optional host that puts the agent on QQ.
 
 | Setup | What you get | Do reminders/alerts fire on time? |
 | --- | --- | --- |
-| dsh only (Web / TUI / headless) | all seven tools | **No**: they are checked when you talk to the agent and it calls `weather_reminder(due)` / `weather_alert` |
-| dsh + qq-bridge (QQ) | all seven tools (allowlist needed) | **Yes**: the bridge checks reminders every 30s and alerts at 07:00 / 18:00 |
+| dsh only (Web / TUI / headless) | all eight tools | **No**: they are checked when you talk to the agent and it calls `weather_reminder(due)` / `weather_alert` |
+| dsh + qq-bridge (QQ) | all eight tools (allowlist needed) | **Yes**: the bridge checks reminders every 30s and alerts at 07:00 / 18:00 |
 
 qq-bridge adds exactly two things, neither of which the plugin depends on:
 

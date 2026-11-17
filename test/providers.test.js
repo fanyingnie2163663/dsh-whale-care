@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：天气源选择与降级。
 // 重点验证「残缺结构」会被当成失败，让 fallback 继续试下一个源，
 // 而不是把 {} 一路传到话术层。
@@ -22,11 +26,9 @@ writeFileSync(badPath, 'export async function fetchWeather() { return {}; }\n');
 
 const { fetchWeather, listProviders } = await import('../lib/providers.js');
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('providers', async () => {
 assert(listProviders().includes('wttr') && listProviders().includes('openmeteo') && listProviders().includes('custom'), '内置源与 custom 都在列表里');
 
 // 1) 自定义源返回完整结构 → 正常返回
@@ -58,3 +60,6 @@ delete process.env.DSH_WEATHER_PROVIDER;
 
 try { rmSync(home, { recursive: true, force: true }); } catch {}
 delete process.env.DSH_HOME;
+
+  nodeAssert.equal(total(), 7, '断言总数 7')
+})

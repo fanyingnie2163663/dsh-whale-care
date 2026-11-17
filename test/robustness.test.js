@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：残缺/异常天气数据下，各层不能抛错、不能把 undefined 拼进给用户的话。
 //
 // 起因：拿 {} 调 buildCareBrief 和 formatDetailed 会直接抛 TypeError；
@@ -8,11 +12,9 @@ import { formatDetailed } from '../lib/weather.js';
 import { formatAlert } from '../lib/alerts.js';
 import { describeReminder } from '../lib/reminders.js';
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('robustness', async () => {
 const clean = (text) => !/undefined|NaN|\[object Object\]/.test(String(text));
 
 const full = {
@@ -67,3 +69,6 @@ assert(clean(describeReminder({})), 'describeReminder({}) 不出现 undefined');
 
 const badAlert = formatAlert({ level: '红', title: '大风红色预警' });
 assert(badAlert.startsWith('🔴') && clean(badAlert), 'formatAlert 缺 detail/advice 时仍可读');
+
+  nodeAssert.equal(total(), 12, '断言总数 12（另有 4 条在 catch 分支里，只在失败时执行）')
+})

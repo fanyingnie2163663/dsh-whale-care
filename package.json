@@ -31,7 +31,16 @@
     "LICENSE"
   ],
   "scripts": {
-    "demo": "node scripts/demo.mjs 合肥"
+    "demo": "node scripts/demo.mjs 合肥",
+    "test": "node --test \"test/**/*.test.js\"",
+    "typecheck": "tsc -p tsconfig.check.json",
+    "lint": "oxlint lib test",
+    "check": "npm run typecheck && npm run lint && npm test"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "oxlint": "^1.93.0",
+    "typescript": "^5.9.3"
   },
   "keywords": [
     "dsh",

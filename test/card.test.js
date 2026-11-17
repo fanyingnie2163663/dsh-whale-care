@@ -1,11 +1,13 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：天气卡片的 SVG 内容（不渲染，渲染在服务器集成测试里做）。
 import { buildWeatherCardSvg, CARD_SIZE } from '../lib/card.js';
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('card', async () => {
 const data = {
   place: '合肥',
   now: { temp: 18, feels: 16, desc: '多云', humidity: 56, uv: 3 },
@@ -30,3 +32,6 @@ assert(fest.includes('今天是立冬'), '节日徽章文案完整');
 
 const minimal = buildWeatherCardSvg({}, {}, { now: new Date(2026, 10, 1, 9, 0) });
 assert(minimal.startsWith('<svg') && !/undefined|NaN/.test(minimal), '空数据也能出图，不崩');
+
+  nodeAssert.equal(total(), 10, '断言总数 10')
+})

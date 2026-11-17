@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：可选的「用户上下文」快照 → 偏好档案的合并逻辑。
 //
 // 别的插件（比如 qq-bridge）可以把对这个人的印象写进
@@ -10,11 +14,9 @@ import path from 'node:path';
 import { hintsFromContext, mergeHints, loadUserContext } from '../lib/user-context.js';
 import { effectiveProfile, describeProfile, loadProfile } from '../lib/profile.js';
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('hints', async () => {
 // 每个用例一个临时 DSH_HOME
 const homes = [];
 function makeHome(userContext) {
@@ -106,3 +108,6 @@ assert(desc.includes('来自 qq-bridge'), 'describeProfile 标注印象来源');
 // 清理
 for (const dir of homes) { try { rmSync(dir, { recursive: true, force: true }); } catch {} }
 delete process.env.DSH_HOME;
+
+  nodeAssert.equal(total(), 19, '断言总数 19（另有 1 条在 catch 分支里）')
+})

@@ -1,11 +1,13 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：偏好档案的字段校验（重点是每天关心开关 dailyCare 和发送时间 careTime）。
 import { sanitizeProfile, describeProfile } from '../lib/profile.js';
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('profile', async () => {
 // 开关：true / false 都要能存下来
 assert(sanitizeProfile({ dailyCare: false }).dailyCare === false, 'dailyCare=false 可以存');
 assert(sanitizeProfile({ dailyCare: true }).dailyCare === true, 'dailyCare=true 可以存');
@@ -31,3 +33,6 @@ const descTime = describeProfile({ nickname: '老爹', careTime: '06:50' });
 assert(descTime.includes('天气关心时间 06:50'), '设置时间时 describeProfile 有提示');
 const descDefault = describeProfile({ nickname: '老爹' });
 assert(!descDefault.includes('每天天气关心'), '默认（开）时不啰嗦');
+
+  nodeAssert.equal(total(), 14, '断言总数 14')
+})

@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：多城市 / 出差（travelCity + travelUntil）。
 import path from 'node:path';
 import os from 'node:os';
@@ -7,10 +11,9 @@ import { writeFile, readFile } from 'node:fs/promises';
 process.env.DSH_HOME = path.join(os.tmpdir(), `dsh-whale-care-travel-${process.pid}`);
 const P = await import('../lib/profile.js');
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
+
+test('travel', async () => {
 const plusDays = (n) => {
   const d = new Date();
   d.setDate(d.getDate() + n);
@@ -57,3 +60,6 @@ assert(!cleared.travelCity && !cleared.travelUntil, 'clear 可以取消出差');
 assert((await P.effectiveProfile()).city === '合肥', '取消后回到默认城市');
 
 console.log('\n偏好：', P.describeProfile(await P.effectiveProfile()));
+
+  nodeAssert.equal(total(), 14, '断言总数 14')
+})

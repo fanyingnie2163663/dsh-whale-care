@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：关心话术的措辞、数字口径和穿衣建议。
 //
 // 起因：04:58 的每日关心发成了「合肥今天19到24，早晚差十度」。
@@ -6,11 +10,9 @@
 // 现在改成「区间 + 温差 + 穿衣建议」，这个单测锁住口径，也锁住温度带。
 import { buildCareBrief, outfitFor } from '../lib/care.js';
 
-const assert = (cond, msg) => {
-  console.log(`${cond ? '✅' : '❌'} ${msg}`);
-  if (!cond) process.exitCode = 1;
-};
+const { ok: assert, total } = makeChecker()
 
+test('care', async () => {
 const data = {
   place: '合肥',
   now: { temp: 16, feels: 14, desc: '霾', humidity: 56, uv: 2 },
@@ -154,3 +156,6 @@ const manyReminders = buildCareBrief(hourlyData, { nickname: '老爹' }, {
   reminders: ['a', 'b', 'c', 'd'],
 });
 assert(manyReminders.includes('等 4 条'), '超过 3 条提醒时用「等 N 条」收口');
+
+  nodeAssert.equal(total(), 41, '断言总数 41')
+})

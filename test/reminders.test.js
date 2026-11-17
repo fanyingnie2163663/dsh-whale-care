@@ -1,3 +1,7 @@
+import test from 'node:test'
+import nodeAssert from 'node:assert/strict'
+import { makeChecker } from './harness.js'
+
 // 离线单测：不联网，只验证提醒的时间/去重/天气条件判断。
 import path from 'node:path';
 import os from 'node:os';
@@ -9,8 +13,10 @@ const R = await import('../lib/reminders.js');
 const { addReminder, loadReminders, saveReminders, dueReminders, evaluateWeatherReminder, describeReminder } = R;
 
 const at = (h, m, day = 30) => new Date(2026, 9, day, h, m);
-const assert = (cond, msg) => { console.log(`${cond ? '✅' : '❌'} ${msg}`); if (!cond) process.exitCode = 1; };
 
+const { ok: assert, total } = makeChecker()
+
+test('reminders', async () => {
 await R.saveReminders([]);
 const med = await addReminder({ label: '吃降压药', time: '08:00', intent: 'text' });
 assert(!!med.id, '新增文本提醒');
@@ -102,3 +108,6 @@ assert(ordinary.length === 1 && ordinary[0].id === 'd', '12-24 只预告每天�
 
 console.log('\n提醒列表：');
 for (const it of await loadReminders()) console.log(' -', describeReminder(it));
+
+  nodeAssert.equal(total(), 28, '断言总数 28')
+})
