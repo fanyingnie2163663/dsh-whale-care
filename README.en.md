@@ -13,12 +13,12 @@
 <p align="center"><b>中文</b> · <a href="README.md">README.md</a></p>
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
+dsh plugin --profile web add dsh-whale-care
 ```
 
 Free · no API key · no account · preferences stay on your machine.
 
-<sub>npm's latest release is still 0.5.7; 0.7.0 is not published yet — use the GitHub spec above for 0.7.0.</sub>
+<sub>To track the latest code in the repo: <code>dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care</code></sub>
 
 ## Quick start
 Restart dsh after installing; three minutes to first use. Start by telling it who you are:

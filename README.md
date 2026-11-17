@@ -13,12 +13,12 @@
 <p align="center"><b>English</b> · <a href="README.en.md">README.en.md</a></p>
 
 ```bash
-dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
+dsh plugin --profile web add dsh-whale-care
 ```
 
 免费 · 无需 API Key · 不绑账号 · 偏好只存本机，不联网上传。
 
-<sub>npm 上最新发布仍是 0.5.7；0.7.0 尚未发布，要 0.7.0 请用上面这条 GitHub 安装。</sub>
+<sub>想跟仓库最新代码：<code>dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care</code></sub>
 
 ## 快速开始
 
