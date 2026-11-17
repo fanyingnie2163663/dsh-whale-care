@@ -14,6 +14,8 @@
     "./reminders": "./lib/reminders.js",
     "./alerts": "./lib/alerts.js",
     "./openmeteo": "./lib/openmeteo.js",
+    "./weekly": "./lib/weekly.js",
+    "./usage": "./lib/usage.js",
     "./festivals": "./lib/festivals.js",
     "./mood": "./lib/mood.js",
     "./card": "./lib/card.js",
