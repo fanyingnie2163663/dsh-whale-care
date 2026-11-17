@@ -53,7 +53,7 @@ const D = {
 // 数字取自仓库里已发布的对比图 assets/screenshot-compare.png（96% / 体感 12.9°C / 湿度 78% /
 // AQI 83 / 今天 13.2~19°C / 明天降雨 100%），三张图才对得上；该图没展示的字段（风力、明日区间、UV）
 // 取的是不改变任何一句建议文案的值。
-const SAMPLE_NOW = new Date(2026, 10, 3, 8, 0); // 本地 08:00：任何时区都落在 2026-11-03 早上
+const SAMPLE_NOW = new Date(2026, 10, 3, 20, 0); // 本地 20:00：任何时区都落在 2026-11-03 晚时段（图 C 要晚版）
 const SAMPLE_DATA = {
   place: '合肥',
   now: { temp: 13.8, feels: 12.9, desc: '多云', humidity: 78, uv: 2, wind: 18 },
@@ -105,9 +105,8 @@ function frameSvg({ width, height, defs, body }) {
 function weatherCardJob() {
   const raw = buildWeatherCardSvg(SAMPLE_DATA, SAMPLE_PROFILE, { now: SAMPLE_NOW });
 
-  // card.js 里写的是服务器字体（Noto），这里换成本机也有的同义字体栈；chip 的 <text> 没有
-  // font-family，靠根节点继承，所以根节点也补一份。
-  let svg = raw.replaceAll('font-family="Noto Sans CJK SC, Noto Sans SC, sans-serif"', 'font-family="' + FONT + '"');
+  // card.js 已经用 BRIEF §3 的字体栈（含 Microsoft YaHei），本机与服务器都能落字，不用再换。
+  const svg = raw;
 
   const defsMatch = svg.match(/<defs>([\s\S]*?)<\/defs>/);
   assert(defsMatch, 'card.js 输出的 <defs> 没找到，卡片结构变了');

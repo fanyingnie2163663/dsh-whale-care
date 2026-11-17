@@ -16,16 +16,17 @@
 dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 ```
 
-Free · no API key · no account · preferences stay on your machine. <sub>npm still ships 0.5.7; use the GitHub spec above for 0.6.0.</sub>
+Free · no API key · no account · preferences stay on your machine.
+
+<sub>npm still ships 0.5.7; use the GitHub spec above for 0.6.0.</sub>
+
 ## Quick start
 Restart dsh after installing; three minutes to first use. Start by telling it who you are:
-
 ```bash
 "Remember: I'm in Hefei, call me A-Ning, I feel the cold, I bike to work, I have a sensitive nose"
 ```
 
 Then just ask:
-
 ```bash
 "Umbrella today?" "What should I wear tomorrow?" "Which day this week is coldest?"
 ```
@@ -198,7 +199,7 @@ Definition: **a read-only impression snapshot written by another plugin**; this 
 
 Not a dashboard: one card with today, tomorrow, and at most three suggestions.
 
-- Current temperature, today's range, rain / wind / air, clothing and umbrella, tomorrow; saved to `$DSH_HOME/whale-weather/cards/weather-*.svg`, and the host converts it with `ffmpeg` (no ffmpeg or fonts gives a readable error, text still works).
+- Current temperature, today's range, swing / rain / air, clothing and umbrella, tomorrow; saved to `$DSH_HOME/whale-weather/cards/weather-*.svg`, and the host converts it with `ffmpeg` (no ffmpeg or fonts gives a readable error, text still works).
 
 <sub>A 720×980 weather card; the host turns it into an image and sends it.</sub>
 

@@ -19,6 +19,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 免费 · 无需 API Key · 不绑账号 · 偏好只存本机，不联网上传。
 
 <sub>npm 上的已发布版是 0.5.7；要 0.6.0 请用上面这条 GitHub 安装。</sub>
+
 ## 快速开始
 
 装好、重启 dsh 之后，三分钟就能用起来。先让它记住你是谁：
@@ -210,7 +211,7 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 
 不是一屏数据，是一张卡：今天、明天、最多三条建议。
 
-- 当前温度、今天区间、降雨 / 风力 / 空气、穿衣与带伞、明日预告；
+- 当前温度、今天区间、温差 / 降雨 / 空气、穿衣与带伞、明日预告；
 - 存到 `$DSH_HOME/whale-weather/cards/weather-*.svg`，宿主用 `ffmpeg` 转 PNG 再发；没有 ffmpeg 或字体时返回可读错误，不影响文字播报。
 
 <sub>720×980 的天气卡，宿主转成图片直接发到聊天里。</sub>
