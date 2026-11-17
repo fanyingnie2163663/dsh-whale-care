@@ -31,6 +31,7 @@ Then just ask:
 "Umbrella today?" "What should I wear tomorrow?" "Which day this week is coldest?"
 ```
 
+- **The city is yours to set**: before you set one it says plainly that it cannot tell, and never quietly falls back to some default city; to change city for one question, just say it ("umbrella in Shanghai today?").
 - Or ask nothing: one message each morning, switchable, follows your routine; pills and umbrella reminders need a host to wake the agent (see "Optional QQ"). Version gate: dsh `0.1.2-rc.1` ~ `0.2.x`; `0.3` is untested and the peer gate refuses the install.
 
 ## What it is
@@ -259,8 +260,9 @@ No account, key or chat content is sent; the plugin collects no usage data. Both
 ## Development
 ```bash
 npm run check                             # types + lint + tests, no network needed
-node scripts/demo.mjs 合肥                 # detailed report
-node scripts/demo.mjs 合肥 care            # caring version
+node scripts/demo.mjs                     # detailed report (city from profile.json)
+node scripts/demo.mjs <city>               # detailed report (city given inline)
+node scripts/demo.mjs <city> care          # caring version
 ```
 
 Layout:

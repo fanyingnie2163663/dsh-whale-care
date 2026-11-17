@@ -34,6 +34,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 「今天要带伞吗」「明天穿什么」「这周哪天最冷」
 ```
 
+- **城市由你自己设**：没设之前它会直接说判断不了，不会偷偷用某个默认城市；临时换城市就在话里说（「上海今天要带伞吗」）。
 - 什么都不问也行：每天早上主动说一条，可关，跟着你的作息走；
 - 到点提醒吃药、带伞要宿主唤醒，见「接入 QQ」；版本门槛 dsh `0.1.2-rc.1` ~ `0.2.x`，`0.3` 未验证，peer 门禁会拒装。
 
@@ -277,8 +278,9 @@ MIT，天气数据版权归上述两家所有。
 ## 开发
 ```bash
 npm run check                             # 类型 + lint + 单测，不需要网络
-node scripts/demo.mjs 合肥                 # 详细播报
-node scripts/demo.mjs 合肥 care            # 关心版
+node scripts/demo.mjs                     # 详细播报（城市取 profile.json）
+node scripts/demo.mjs <城市>               # 详细播报（临时指定城市）
+node scripts/demo.mjs <城市> care          # 关心版
 ```
 
 目录：
