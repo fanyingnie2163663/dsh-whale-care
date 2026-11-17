@@ -1,233 +1,280 @@
-# dsh-whale-care
+<p align="center">
+  <img src="assets/icon.svg" width="96" height="96" alt="Whale Care">
+</p>
 
-![version](https://img.shields.io/badge/version-0.6.0-blue)
-![license](https://img.shields.io/badge/license-MIT-green)
-![dsh](https://img.shields.io/badge/dsh-0.1.2_to_0.2.x-6f42c1)
-![no api key](https://img.shields.io/badge/API%20key-not%20required-brightgreen)
-![node](https://img.shields.io/badge/node-22_%2F_24-339933)
+<h1 align="center">Whale Care</h1>
 
-> Current version **0.6.0** (reminders 2.0 / travel city / mood / weather card).
+<p align="center"><sub>dsh-whale-care · teach your agent to actually care</sub></p>
 
-A **care engine** for [DeepSeek Harness (dsh)](https://github.com/deepseek-ai/deepseek-harness): it teaches the assistant how to actually care about one person instead of dumping data on them.
+<p align="center">
+  <img alt="repo 0.6.0" src="https://img.shields.io/badge/repo-0.6.0-2E5FD0?style=flat-square"> <img alt="free · no API key" src="https://img.shields.io/badge/free-no_API_key-C43A5C?style=flat-square"> <img alt="dsh 0.1.2 ~ 0.2.x" src="https://img.shields.io/badge/dsh-0.1.2_~_0.2.x-42618F?style=flat-square"> <img alt="MIT" src="https://img.shields.io/badge/license-MIT-5C7086?style=flat-square">
+</p>
 
-Weather is the first and cheapest care source — everyone steps outside, and cold, rain and air quality hit you directly. So this version uses it to get the "caring" loop right; habits (sleep, meals, water, sitting too long) can plug into the same judgment layer later.
-
-**The plugin is MIT and free; the weather data needs no API key and no account.**
-
-To be precise about "free": the plugin and both weather APIs cost nothing, but **every agent turn still burns model tokens**; wttr.in is a community service (can rate-limit), and Open-Meteo's free tier is non-commercial use only.
-
-**中文**: [README.md](README.md)
-
-## Quick start
+<p align="center"><b>中文</b> · <a href="README.md">README.md</a></p>
 
 ```bash
-# 1. install
 dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
+```
 
-# 2. restart dsh, then tell the agent who you are
-"Remember: I'm in Hefei, call me A-Ning, I feel the cold, I bike to work, I have a sensitive nose."
+Free · no API key · no account · preferences stay on your machine. <sub>npm still ships 0.5.7; use the GitHub spec above for 0.6.0.</sub>
+## Quick start
+Restart dsh after installing; three minutes to first use. Start by telling it who you are:
 
-# 3. then just ask
+```bash
+"Remember: I'm in Hefei, call me A-Ning, I feel the cold, I bike to work, I have a sensitive nose"
+```
+
+Then just ask:
+
+```bash
 "Umbrella today?" "What should I wear tomorrow?" "Which day this week is coldest?"
 ```
 
-No API key, no signup; preferences stay in `~/.dsh/whale-weather/profile.json` on your machine.
+- Or ask nothing: one message each morning, switchable, follows your routine; pills and umbrella reminders need a host to wake the agent (see "Optional QQ"). Version gate: dsh `0.1.2-rc.1` ~ `0.2.x`; `0.3` is untested and the peer gate refuses the install.
 
-**How it differs from a plain weather plugin**:
+## What it is
+> Work out what actually matters, then say it the way a person would.
 
-| Plain weather plugin | This one |
-| --- | --- |
-| `rain 78%` | "Rain today (78%) — take an umbrella." |
-| `tomorrow 12–20°C` | "Tomorrow 12–20°C — a jacket by day, a sweater in the morning." |
-| Same answer for everyone | Remembers you feel the cold, bike to work, have a sensitive nose |
-| Silent until asked | Sends one message each morning (switchable, follows your routine) |
+- **It knows who you are and what time it is**: nickname, cold/heat sensitivity, commute, umbrella, health notes; "take care on the way" in the morning, "get some rest" at night, no sunscreen after dark;
+- **It only says what matters and stays local**: ranked by impact, at most three items, never a rules dump; preferences live in `~/.dsh/whale-weather/profile.json`, nothing is uploaded.
 
-## Where it runs: plain dsh, QQ is optional
-
-**This is a standard dsh plugin and does not depend on qq-bridge.** Restart dsh and **any dsh session** (Web, TUI, headless) can call all eight tools. qq-bridge is only an optional host that puts the agent on QQ.
-
-| Setup | What you get | Do reminders/alerts fire on time? |
+| Setup | What you get | Do reminders fire on time? |
 | --- | --- | --- |
-| dsh only (Web / TUI / headless) | all eight tools | **No**: they are checked when you talk to the agent and it calls `weather_reminder(due)` / `weather_alert` |
-| dsh + qq-bridge (QQ) | all eight tools (allowlist needed) | **Yes**: the bridge checks reminders every 30s and alerts at 07:00 / 18:00 |
+| dsh only | all eight tools | No, only when the agent happens to wake up |
+| dsh + QQ | all eight tools, plus an allowlist | Yes, reminders every 30s, alerts at 07:00 / 18:00 |
 
-qq-bridge adds exactly two things, neither of which the plugin depends on:
+## What it sounds like
+<img src="assets/screenshot-compare.png" width="640" alt="Same weather, two ways">
 
-1. **Runtime tool allowlist**: the `qq-chat-v2` preset rejects non-MCP tools by default, so the five names must be added to `SAFE_EXACT` (see “QQ bot users”);
-2. **Scheduled wake-ups**: dsh has no timer of its own; a reminder/alert needs a host to wake the agent at the right moment. Without it, reminders are only checked the next time the agent is awake.
+<sub>Same weather, two ways: raw API data on the left, what it actually says on the right.</sub>
 
-## Why
+Same day, same profile (Hefei · 2026-11-03 · feels the cold, bikes, sensitive nose), verbatim:
 
-A weather app says "78% chance of rain"; it does not say "you always forget your umbrella — put one in your bag".
-A voice assistant says "it will be colder tomorrow"; it does not remember that you feel the cold, bike everywhere, or have a sensitive nose.
+> 阿宁，这么晚还没睡。合肥现在 13.8°C（体感 12.9°C），多云，湿度 78%。
+> 今天 13.2~19°C，白天薄外套配长袖，早晚换厚外套。
+> 今天有雨（96%），出门带把伞。
+> 骑车路滑，慢一点。
+> 空气很差（AQI 83），出门戴口罩。
+> 早点睡吧，身体要紧。
 
-This plugin tries to say the second half: **work out what actually matters, then turn the conclusion into a short, warm bit of care.**
-
-- **It knows who you are**: nickname, cold/heat sensitivity, how you get around, umbrella, health notes — all explicitly set by the user;
-- **It knows what time it is**: "take care on the way" in the morning, "get some rest" at night; no sunscreen reminders after dark;
-- **It only says what matters**: ranked by impact, at most three items, never a rules dump;
-- **It stays local**: preferences live in `~/.dsh/whale-weather/profile.json`, nothing is uploaded.
-
-## Seven tools
-
-| Tool | Purpose |
-| --- | --- |
-| `weather` | Detailed report: current conditions, air quality, 3-day forecast, generic advice |
-| `weather_care` | **Caring version**: personalized by profile and time of day; includes today's reminders, festival/solar term and hourly rain peak |
-| `weather_profile` | Read/write preferences: city / travel city, nickname, cold/heat sensitivity, how you get around, umbrella, health notes |
-| `weather_reminder` | One reminder engine: daily / weekdays / one-off date / yearly (birthdays), or weather-conditioned ones (rain/temp drop/wind/swing/AQI; speaks only when the condition matches) |
-| `weather_alert` | Extreme-weather alerts: rainstorm / gale / heat / cold wave / thunder / dust / fog / air pollution, levels yellow/orange/red, deduped per day |
-| `weather_mood` | Mood score (1–5) log, recent entries and trend |
-| `weather_card` | Render a 720×980 weather card (SVG) for the host to convert and send |
-
-## What the caring version looks like
-
-> A-Ning, good evening. Hefei is 14°C now (feels like 13°C), haze, humidity 69%.
-> Tomorrow 9–14°C. Wear a light jacket or trench coat by day; a padded coat and scarf in the morning and evening.
-> Tomorrow's high is only 14°C, 6°C lower than today — you feel the cold, so don't skip the jacket and trousers.
-> Air is poor (AQI 63) — your nose is sensitive, keep the mask on tomorrow.
-> Tomorrow haze.
-> Get some rest, don't stay up too late.
-
-How preferences change the wording and thresholds:
+<details>
+<summary>How preferences change it</summary>
 
 | Preference | Effect |
 | --- | --- |
 | `nickname` | Opens with the name the user wants to be called |
-| `coldSensitive` | Warns at a 3°C drop (5°C default), keeps-warm at ≤8°C |
-| `heatSensitive` | Heat warning at 28°C (32°C default) |
-| `commute` = `bike` | Rain → "roads are slippery, slow down"; wind → "don't fight the headwind" |
-| `commute` = `walk` | Rain → "avoid the puddles" |
-| `hasUmbrella` = false | Rain → "you always forget your umbrella, put one in your bag" |
-| `notes` with 鼻/咽/哮喘/过敏 | Poor air → "your nose is sensitive, wear the mask" |
-| Time of day | Different greeting and closing; evening adds tomorrow's preview |
+| `coldSensitive` | Warns at a 3°C drop, keeps-warm at ≤8°C |
+| `heatSensitive` | Heat warning at 28°C |
+| `commute` = `bike` | Rain: slippery roads; wind: do not fight the headwind |
+| `commute` = `walk` | Rain: avoid the puddles |
+| `hasUmbrella` = false | Rain: "you always forget your umbrella, put one in your bag" |
+| `notes` with 鼻 / 咽 / 哮喘 / 过敏 | Poor air: sensitive nose, keep the mask on |
 
-Preferences live in `$DSH_HOME/whale-weather/profile.json` (default `~/.dsh/whale-weather/profile.json`, mode 600).
+</details>
 
-## Detailed report features
+## Eight tools
+After installing, the agent's tool list contains these eight; none needs an API key.
 
-- **Current**: temperature, feels-like, condition (localized to Chinese), humidity, wind, visibility
-- **Air quality**: AQI + PM2.5 + level (excellent / good / moderate / poor / very poor)
-- **3-day forecast**: high/low, condition, **chance of rain**, wind
-- **Advice** (only when relevant, max 4 lines):
-  - rain probability ≥40% (or today's condition has rain) → take an umbrella
-  - wind ≥30 km/h → scarf + windproof jacket
-  - tomorrow's high ≥5°C lower than today → dress warmer (≥5°C higher → lighter clothes)
-  - day/night swing ≥10°C → jacket for morning/evening
-  - low ≤5°C → keep warm
-  - UV index ≥6 → sun protection
-  - AQI ≤20 → great for a walk; 20–40 → fine to go out; 40–60 → sensitive groups stay in; >60 → mask, less outdoor time
-- **Chinese condition mapping**: wttr's `lang_zh` does not actually translate; this plugin ships a 40+ entry WWO → Chinese map, falling back to the original text
-- Core logic is decoupled from dsh: import `dsh-whale-care/weather` from any agent framework
+| Tool | One line |
+| --- | --- |
+| `weather` | Detailed report: current, air, 3-day forecast, generic advice |
+| `weather_care` | Caring version: profile and time of day, one sendable message |
+| `care_brief` | Short version: at most three items plus today's due reminders |
+| `weather_profile` | Read/write preferences: city, nickname, cold/heat, commute, umbrella |
+| `weather_reminder` | Reminders: daily / weekdays / one-off / yearly, or weather-conditioned |
+| `weather_alert` | Extreme-weather alerts, yellow/orange/red, deduped per day |
+| `weather_card` | Render a 720×980 weather card (SVG) for the host to send |
+| `weather_mood` | Mood scores 1~5: log, recent entries, trend |
 
-## Install notes
+<details>
+<summary>What the report contains</summary>
 
-The install command is in **Quick start** above. Restart dsh afterwards; the agent's tool list will then contain **`weather`**.
+- Current temperature / feels-like / condition / humidity / wind / visibility, plus AQI + PM2.5 + five levels;
+- Three days of high/low, condition, chance of rain, wind; at most 4 advice lines, only when relevant (rain ≥40%, wind ≥30km/h, swing ≥10°C, drop ≥5°C, low ≤5°C, UV ≥6, AQI band); Chinese condition mapping ships 40+ WWO entries, since wttr's `lang_zh` does not actually translate.
 
-**Supported DSH versions**: `0.1.2-rc.1` through `0.2.x`. `package.json` declares the peer range per
-generation (`>=0.1.2-rc.1 <0.2.0 || … || >=0.2.1-0 <0.3.0`) plus `engines.dsh`; `0.3` is untested, and the
-peer gate refuses the install instead of letting it crash at runtime.
+Sample output (Hefei · 2026-11-03 snapshot):
+```text
+合肥 现在 13.8°C（体感 12.9°C），多云，湿度 78%，风 18km/h
+空气质量 很差（AQI 83，PM2.5 62μg/m³）
+今天（11-03）13.2~19°C 多云，降雨概率 96%，风 18km/h
+明天（11-04）9~15°C 阴，降雨概率 100%，风 24km/h
 
-After installing, ask the agent to run `weather_profile(action="get")` once: if another plugin on this
-machine already stored preferences/impressions (e.g. qq-bridge's member notes — see
-"Optional: daily care and host impressions"), the output will include an impression line, and the agent
-can use it instead of asking the same questions again.
-
-## Usage
-
-| Param | Type | Description |
-| --- | --- | --- |
-| `city` | string (required) | City name in Chinese, pinyin or English (Hefei, 合肥, Tokyo) |
-| `days` | integer (optional) | Forecast days 1–3, default 3 |
-
-## Sample output
-
-```
-Hefei now 14°C (feels like 13°C), haze, humidity 69%, wind 5km/h, visibility 10km
-Air quality poor (AQI 63, PM2.5 57μg/m³)
-Today (10-30) 12~23°C sunny, rain 6%, wind 9km/h
-Tomorrow (10-31) 14~24°C haze, rain 16%, wind 19km/h
-Day after (11-01) 12~20°C drizzle, rain 78%, wind 28km/h
-
-Advice:
-· Rain chance up to 78% — take an umbrella
-· Today's day/night swing is 11°C — bring a jacket
-· Air is poor (AQI 63) — wear a mask, less time outdoors
+建议：
+· 降雨概率最高 100%，出门记得带伞
+· 空气很差，尽量待在室内
 ```
 
-(The actual output is Chinese; see README.md.)
+</details>
 
-## Optional: QQ bot users (qq-bridge)
+<details>
+<summary>Parameters and fields</summary>
 
-`qq-bridge`'s `qq-chat-v2` preset enforces an execution-time tool allowlist (`SAFE_EXACT` in `plugins/qq-agent-presets/qq-tool-restrict.mjs`). Non-MCP tools are rejected by default. Add one line:
+`weather`, `weather_care` and `weather_card` take `city` (defaults to the profile city) and `days` (1~3, default 3). Fields of `weather_profile`:
 
-```js
-const SAFE_EXACT = new Set([
-  'ask_user_question',
-  'todo_write',
-  'weather',            // ← dsh-whale-care
-  'weather_care',       // ← dsh-whale-care
-  'weather_profile',    // ← dsh-whale-care
-  'weather_reminder',   // ← dsh-whale-care
-  'weather_alert',      // ← dsh-whale-care
-])
-```
+| Field | Meaning |
+| --- | --- |
+| `city` | Default city |
+| `nickname` | What the user wants to be called |
+| `coldSensitive` | Warns at a 3°C drop, keeps-warm at ≤8°C |
+| `heatSensitive` | Heat warning at 28°C |
+| `commute` | `walk` / `bike` / `transit` / `drive` / `none` |
+| `hasUmbrella` | Whether the user carries an umbrella |
+| `notes` | Health notes, e.g. 有鼻炎 |
+| `dailyCare` | The morning message; `false` turns it off |
+| `careTime` | Fixed time `HH:MM`; unset follows the routine |
 
-Then restart dsh; otherwise the model gets `工具 "weather" 不在 QQ 桥接白名单内`.
+Travel adds `travelCity` (used first for forecasts) and `travelUntil` (last day; reverts the next day).
 
-## Optional: daily care and host impressions
+</details>
 
-**Daily care**: a host (e.g. qq-bridge) can send one `weather_care` message every morning. Whether it runs, and when, is controlled by two profile fields: `dailyCare` (`false` to turn it off) and `careTime` (`HH:MM`; unset = follow the user's routine). Without a host scheduler this never fires — plain dsh only checks when the model wakes up.
+<details>
+<summary>Alert thresholds</summary>
 
-**Host impressions**: the plugin **does not depend on any host** — preferences live only in `~/.dsh/whale-weather/profile.json`, and everything works without any other file. If another plugin on the same machine knows the user's habits (e.g. qq-bridge's impressions of chat members), it can periodically write a **read-only snapshot** that this plugin uses to fill blanks:
+| Type | Yellow / orange / red |
+| --- | --- |
+| Rainstorm | precipitation 25 / 50 / 100 mm |
+| Gale | wind 50 / 62 / 75 km/h |
+| Heat | high 35 / 37 / 40°C |
+| Cold | low -10 / -20°C (orange / red) |
+| Cold wave | 24h drop 8 / 12 / 16°C |
+| Thunder · dust | condition text contains 雷 / 沙尘 (yellow) |
+| Fog | visibility ≤1km yellow, ≤0.5km orange |
+| Air pollution | AQI 60 / 80 / 100 (European AQI scale) |
 
-> That file is defined as an **impression snapshot written by an external plugin** — not this plugin's own data. This plugin only reads it, never writes back, and never requires it.
-> After installing, have the agent run `weather_profile(action="get")` once: if impressions exist, use them; otherwise just ask.
+Local estimates from the forecast, not official warnings; one level per type per day.
 
+</details>
+
+<details>
+<summary>Switching sources</summary>
+
+| Source | Notes |
+| --- | --- |
+| `wttr` (default) | wttr.in; Chinese mapping lives in the plugin; full data, single point |
+| `openmeteo` | Open-Meteo: geocoding + forecast + air, free and keyless |
+| `custom` | Write a module that exports `fetchWeather` |
+
+Priority: `DSH_WEATHER_PROVIDER` env > `config.json` `provider` > `wttr`; failures fall back in `fallback` order.
 ```json
-// $DSH_HOME/whale-weather/user-context.json (0600 recommended)
 {
-  "version": 1,
-  "updatedAt": 1793399075989,
-  "source": "qq-bridge",
-  "user": {
-    "qq": "123456789",
-    "displayName": "SampleUser",
-    "traits": ["平时骑车上班", "有鼻炎"],
-    "interactionCount": 3,
-    "lastSeenAt": 1793303867850
-  }
+  "provider": "openmeteo",
+  "fallback": ["wttr"],
+  "customModule": "/opt/weather/my-provider.mjs"
 }
 ```
 
-- Values in `profile.json` always win; the snapshot only fills **missing** fields: commute, cold/heat sensitivity, health notes
-- Older than 7 days → ignored; missing file / broken JSON / wrong version → ignored
-- Keyword matching only (bike / walk / transit / drive, cold/heat, rhinitis / allergy …); no guessing, and free text is never pasted into the forecast message
-- Writing the snapshot is the host's job; this plugin only reads
+A custom source only needs the shared shape (see the header of `lib/providers.js`):
+```js
+export async function fetchWeather(city, { days = 3 } = {}) {
+  return {
+    place: city,
+    now: { temp: 20, feels: 19, desc: '晴', humidity: 55, wind: 8, visibility: 10, uv: 4 },
+    air: { aqi: 45, pm25: 20 },
+    days: [{ label: '今天', date: '10-30', min: 12, max: 22, desc: '晴', rain: 10, wind: 12 }],
+  };
+}
+```
 
-## Data sources & privacy
+</details>
+
+<details>
+<summary>Host impressions</summary>
+
+Definition: **a read-only impression snapshot written by another plugin**; this plugin only reads it, never writes back, and never requires it.
+
+- `profile.json` wins; the snapshot only fills missing fields (commute, cold/heat, health notes); older than 7 days or broken JSON is ignored; keyword matching only, no guessing, and writing the snapshot is the host's job.
+```json
+{
+  "version": 1,
+  "source": "qq-bridge",
+  "user": { "traits": ["平时骑车上班", "有鼻炎"], "interactionCount": 3 }
+}
+```
+
+</details>
+
+## Card and reminders
+<p align="center"><img src="assets/screenshot-card.png" width="360" alt="Weather card"></p>
+
+Not a dashboard: one card with today, tomorrow, and at most three suggestions.
+
+- Current temperature, today's range, rain / wind / air, clothing and umbrella, tomorrow; saved to `$DSH_HOME/whale-weather/cards/weather-*.svg`, and the host converts it with `ffmpeg` (no ffmpeg or fonts gives a readable error, text still works).
+
+<sub>A 720×980 weather card; the host turns it into an image and sends it.</sub>
+
+A reminder is not a separate thing: it is the same card in time form.
+
+<img src="assets/screenshot-reminder.png" width="360" alt="Reminders on time">
+
+- One reminder = time + trigger + content; weather conditions are evaluated when it fires; four schedules (daily / weekdays `days` / one-off `date` / yearly `yearly`); stored in `reminders.json`, no repeats per day, 2-hour catch-up.
+
+<sub>Fires on time: umbrella, pills, birthdays, only when it matches.</sub>
+
+Mood: `weather_mood` turns "how was today" into a trend you can look back on; `action=log` scores 1~5 (1=poor, 5=great), `action=list` last 10, `action=trend` daily averages; `mood.json`, at most 500 entries.
+
+Daily care: a host can send one `weather_care` every morning; `dailyCare` toggles it, `careTime` pins the time, otherwise it follows the routine.
+
+## Optional QQ
+Only needed if you want the agent to talk on QQ; plain dsh can skip this whole section. The plugin does not depend on qq-bridge; the bridge is an optional host that adds a runtime tool allowlist and scheduled wake-ups. Its `qq-chat-v2` preset rejects non-MCP tools by default, so add the eight names to `SAFE_EXACT`:
+
+```js
+const SAFE_EXACT = new Set([
+  'ask_user_question', 'todo_write',
+  'weather', 'weather_care', 'care_brief', 'weather_profile',
+  'weather_reminder', 'weather_alert', 'weather_card', 'weather_mood',
+])
+```
+
+Restart dsh afterwards, otherwise the model gets `工具 "weather" 不在 QQ 桥接白名单内`. Host-side schedules are set with environment variables:
+
+```text
+QQ_WEATHER_ALERT_TIMES=07:00,18:00
+QQ_WEATHER_ALERT_TARGET=private:123456789
+QQ_WEATHER_ALERT_ENABLED=false
+```
+
+## Privacy and license
 
 | Purpose | Service | Data sent |
 | --- | --- | --- |
 | Weather | [wttr.in](https://wttr.in) | city name |
 | Air quality | [open-meteo.com](https://open-meteo.com) | lat/lon returned by wttr |
 
-No accounts, keys or chat content are sent. The plugin collects and reports nothing. Both services are free, registration-less public endpoints (wttr.in is community-run and may rate-limit; Open-Meteo's free tier is non-commercial only) — please don't hammer them.
+No account, key or chat content is sent; the plugin collects no usage data. Both services are free and registration-less: wttr.in is community-run and may rate-limit; Open-Meteo's free tier is non-commercial only. MIT; weather data remains the property of the two services above.
 
 ## Development
-
 ```bash
-node scripts/demo.mjs Hefei
-node scripts/demo.mjs Tokyo 2
+npm run check                             # types + lint + tests, no network needed
+node scripts/demo.mjs 合肥                 # detailed report
+node scripts/demo.mjs 合肥 care            # caring version
 ```
 
-```
-lib/weather.js   pure logic: wttr + open-meteo + Chinese map + advice rules
-lib/index.js     dsh adapter: registers the `weather` tool via defineTool
-cordis.patch.yml dsh bundle patch
-scripts/demo.mjs standalone demo
+Layout:
+```text
+lib/weather.js     wttr parsing + Chinese mapping + advice
+lib/openmeteo.js   Open-Meteo: geocoding + forecast + air quality
+lib/providers.js   source abstraction: select / fall back / custom module
+lib/care.js        care layer: sensors → judge → voice
+lib/profile.js     preferences; lib/user-context.js host impressions
+lib/reminders.js   reminder engine: schedules, dedupe, conditions
+lib/alerts.js      alerts: levels + per-day dedupe
+lib/festivals.js   festivals / solar terms; lib/mood.js mood log
+lib/card.js        weather card SVG (720×980); lib/index.js dsh wiring
+lib/tools/*.js     one file per tool; scripts/ demo and asset rendering
+test/*.test.js     node --test suites (15 files)
 ```
 
-## License
+<details>
+<summary>Roadmap</summary>
 
-MIT. Weather data remains the property of wttr.in / open-meteo.
+- [x] Current weather / 3-day forecast / air quality; umbrella, clothing, AQI advice
+- [x] Caring version + local preference profile, commute-neutral wording
+- [x] One reminder engine: timed + weather-conditioned + host wake-ups
+- [x] Time-of-day temperatures; extreme-weather alerts (eight types)
+- [x] Switchable sources; daily care; optional host impressions
+- [x] One-off / yearly reminders, hourly rain peak, travel city, weather card
+- [x] Mood log and trend; listed on awesome-dsh-plugin
+- [ ] Lunar birthdays / lunar festivals
+- [ ] English output (i18n)
+
+</details>
