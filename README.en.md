@@ -7,7 +7,7 @@
 <p align="center"><sub>dsh-whale-care · teach your agent to actually care</sub></p>
 
 <p align="center">
-  <img alt="repo 0.7.0" src="https://img.shields.io/badge/repo-0.7.0-2E5FD0?style=flat-square"> <img alt="free · no API key" src="https://img.shields.io/badge/free-no_API_key-C43A5C?style=flat-square"> <img alt="dsh 0.1.2 ~ 0.2.x" src="https://img.shields.io/badge/dsh-0.1.2_~_0.2.x-42618F?style=flat-square"> <img alt="MIT" src="https://img.shields.io/badge/license-MIT-5C7086?style=flat-square">
+  <img alt="repo 0.7.1" src="https://img.shields.io/badge/repo-0.7.1-2E5FD0?style=flat-square"> <img alt="free · no API key" src="https://img.shields.io/badge/free-no_API_key-C43A5C?style=flat-square"> <img alt="dsh 0.1.2 ~ 0.2.x" src="https://img.shields.io/badge/dsh-0.1.2_~_0.2.x-42618F?style=flat-square"> <img alt="MIT" src="https://img.shields.io/badge/license-MIT-5C7086?style=flat-square">
 </p>
 
 <p align="center"><b>中文</b> · <a href="README.md">README.md</a></p>
