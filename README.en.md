@@ -45,7 +45,7 @@ Then just ask:
 | dsh + QQ | all eight tools, plus an allowlist | Yes, reminders every 30s, alerts at 07:00 / 18:00 |
 
 ## What it sounds like
-<img src="assets/screenshot-compare.png" width="640" alt="Same weather, two ways">
+<img src="assets/screenshot-compare.png" width="664" alt="Same weather, two ways">
 
 <sub>Same weather, two ways: raw API data on the left, what it actually says on the right.</sub>
 
@@ -202,7 +202,7 @@ Definition: **a read-only impression snapshot** written by another plugin to `$D
 </details>
 
 ## Card and reminders
-<p align="center"><img src="assets/screenshot-card.png" width="360" alt="Weather card"></p>
+<p align="center"><img src="assets/screenshot-card.png" width="384" alt="Weather card"></p>
 
 Not a dashboard: one card with today, tomorrow, and at most three suggestions.
 
@@ -212,7 +212,7 @@ Not a dashboard: one card with today, tomorrow, and at most three suggestions.
 
 A reminder is not a separate thing: it is the same card in time form.
 
-<img src="assets/screenshot-reminder.png" width="360" alt="Reminders on time">
+<img src="assets/screenshot-reminder.png" width="384" alt="Reminders on time">
 
 - One reminder = time + trigger + content; weather conditions are evaluated when it fires; four schedules (daily / weekdays `days` / one-off `date` / yearly `yearly`); stored in `reminders.json`, no repeats per day, 2-hour catch-up.
 

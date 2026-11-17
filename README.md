@@ -51,7 +51,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 | dsh + QQ | 八个工具，要加白名单 | 会，每 30 秒查提醒、07:00 / 18:00 查预警 |
 
 ## 看它怎么说
-<img src="assets/screenshot-compare.png" width="640" alt="同一天气，两种说法">
+<img src="assets/screenshot-compare.png" width="664" alt="同一天气，两种说法">
 
 <sub>同一天气，两种说法：左边接口原始数据，右边它真实说出的话。</sub>
 
@@ -214,7 +214,7 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 </details>
 
 ## 卡片与提醒
-<p align="center"><img src="assets/screenshot-card.png" width="360" alt="天气卡"></p>
+<p align="center"><img src="assets/screenshot-card.png" width="384" alt="天气卡"></p>
 
 不是一屏数据，是一张卡：今天、明天、最多三条建议。
 
@@ -225,7 +225,7 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 
 提醒不是另一套东西，是同一张卡的时间版。
 
-<img src="assets/screenshot-reminder.png" width="360" alt="到点提醒">
+<img src="assets/screenshot-reminder.png" width="384" alt="到点提醒">
 
 - 一个提醒 = 时间 + 触发条件 + 内容；天气条件在到期那一刻用最新预报评估；
 - 时间表四选一：每天 / 每周几（`days`）/ 一次性（`date`）/ 每年（`yearly`）；存 `reminders.json`，同一天不重复，有 2 小时补发窗口。
