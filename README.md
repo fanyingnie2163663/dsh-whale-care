@@ -7,7 +7,7 @@
 <p align="center"><sub>dsh-whale-care · 教 agent 真正关心一个人</sub></p>
 
 <p align="center">
-  <img alt="repo 0.6.0" src="https://img.shields.io/badge/repo-0.6.0-2E5FD0?style=flat-square"> <img alt="free · 无需 API Key" src="https://img.shields.io/badge/free-no_API_key-C43A5C?style=flat-square"> <img alt="dsh 0.1.2 ~ 0.2.x" src="https://img.shields.io/badge/dsh-0.1.2_~_0.2.x-42618F?style=flat-square"> <img alt="MIT" src="https://img.shields.io/badge/license-MIT-5C7086?style=flat-square">
+  <img alt="repo 0.7.0" src="https://img.shields.io/badge/repo-0.7.0-2E5FD0?style=flat-square"> <img alt="free · 无需 API Key" src="https://img.shields.io/badge/free-no_API_key-C43A5C?style=flat-square"> <img alt="dsh 0.1.2 ~ 0.2.x" src="https://img.shields.io/badge/dsh-0.1.2_~_0.2.x-42618F?style=flat-square"> <img alt="MIT" src="https://img.shields.io/badge/license-MIT-5C7086?style=flat-square">
 </p>
 
 <p align="center"><b>English</b> · <a href="README.en.md">README.en.md</a></p>
@@ -18,7 +18,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 
 免费 · 无需 API Key · 不绑账号 · 偏好只存本机，不联网上传。
 
-<sub>npm 上的已发布版是 0.5.7；要 0.6.0 请用上面这条 GitHub 安装。</sub>
+<sub>npm 上最新发布仍是 0.5.7；0.7.0 尚未发布，要 0.7.0 请用上面这条 GitHub 安装。</sub>
 
 ## 快速开始
 
