@@ -1,13 +1,16 @@
 // 生成 README 素材图：C 天气卡 / D 提醒时间轴 / B 对比图原地重导出。
 // 用法：node scripts/render-readme-assets.mjs
 //
-// 规格来自 notes/design/2026-11-18-readme-visual.md：
+// 规格来自 notes/design/2026-11-18-readme-visual.md §4 与 notes/design/2026-11-18-texture-v2.md §4：
 //   · §4.2 一套框：四角填 #F6F8FB（不透明）、圆角视觉 12px（720 坐标 24 / 1440 文件像素 48 / B 文件 24）、
 //     内侧 1px rgba(21,42,59,0.12) 描边、无阴影；
+//   · 质感 A 把框升级为「内外双描边 + 4 层阶梯投影」：投影 dy 6/9/12/15、透明度 7/5/3/2%、色 #152A3B，
+//     纯属性圆角矩形叠加（§8#4「阶梯投影 = 纯属性」），**不开任何 filter**。
+//     投影要落在卡片外面，所以画布四周留白 PAD=24，三张图同一处理。
 //   · §4.3 图 C 是 lib/card.js 的真实渲染；图 D 是时间轴版（1px 轴 / 8px 节点 / 28px 时间 / 32px 正文 / 行距 48）；
 //   · §4.4 数据冻结：合肥 · 2026-11-03 · 阿宁 · 怕冷 / 骑车 / 有鼻炎。
 // 文案底线：图里每句话都能指回 lib/ 里的代码或真实模板，脚本不写话术。
-// 渲染：headless Chrome 截图（C、D 用 2x；B 用 1x 保持 1280 文件宽），中间文件只写系统临时目录。
+// 渲染：headless Chrome 截图（C、D 用 2x；B 用 1x 保持 1280 内容宽），中间文件只写系统临时目录。
 
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -30,10 +33,25 @@ const H = CARD_SIZE.height;
 const D_W = 720;
 const D_H = 360;
 
+// 图 B 的原始画面（1280×720，1x 导出，README 里按 640 显示）。
+const B_W = 1280;
+const B_H = 720;
+
+// 一套框（质感 A）
 const FRAME_RADIUS = 24;        // 720 坐标；导出后会变成 48 文件像素，正好是「视觉 12px」
+const PAD = 24;                 // 画布四周留白，给投影落下来（@2x 等于 48 文件像素）
 const CORNER = '#F6F8FB';       // 圆角外侧填充，不透明
 const STROKE_COLOR = '#152a3b';
-const STROKE_OPACITY = '0.12';  // = rgba(21,42,59,0.12)
+const OUTER_STROKE_OPACITY = '0.14';
+const INNER_STROKE_OPACITY = '0.55';
+const TOP_ARC_OPACITY = '0.18';
+// 4 层阶梯投影：越远的层越淡，叠出「放在纸上」的落影（§4，纯属性）
+const SHADOW = [
+  { dy: 6, opacity: 0.07 },
+  { dy: 9, opacity: 0.05 },
+  { dy: 12, opacity: 0.03 },
+  { dy: 15, opacity: 0.02 },
+];
 
 // 与 lib/card.js 的字体栈同义（Windows 上先落到微软雅黑，服务器上仍会落到 Noto）。
 const FONT = 'Segoe UI, Microsoft YaHei, PingFang SC, Noto Sans CJK SC, sans-serif';
@@ -82,20 +100,37 @@ function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
 
-// ── 一套框 ────────────────────────────────────────────────────────────
+// ── 一套框（质感 A） ───────────────────────────────────────────────────
 
 const textNode = (x, y, value, attrs) => '<text x="' + x + '" y="' + y + '" ' + attrs + '>' + esc(value) + '</text>';
 
-/** 统一外框：四角 #F6F8FB、圆角 24、内侧 1px 描边、无阴影。 */
+/**
+ * 统一外框：画布四周留 PAD、四角 #F6F8FB、圆角 24、4 层阶梯投影、内外双描边、顶弧再加一道高光。
+ * 只画在画布内侧，不用任何 filter。
+ * @param {{ width: number, height: number, defs?: string, body: string }} job
+ */
 function frameSvg({ width, height, defs, body }) {
+  const canvasW = width + PAD * 2;
+  const canvasH = height + PAD * 2;
+  const shadows = SHADOW.map((layer) => '  <rect x="' + PAD + '" y="' + (PAD + layer.dy) + '" width="' + width
+    + '" height="' + height + '" rx="' + FRAME_RADIUS + '" fill="' + STROKE_COLOR + '" opacity="' + layer.opacity + '"/>');
   return [
-    '<svg xmlns="http://www.w3.org/2000/svg" width="' + width + '" height="' + height + '" viewBox="0 0 ' + width + ' ' + height + '" font-family="' + FONT + '">',
-    '  <defs><clipPath id="readmeFrame"><rect x="0" y="0" width="' + width + '" height="' + height + '" rx="' + FRAME_RADIUS + '"/></clipPath>' + (defs || '') + '</defs>',
-    '  <rect width="' + width + '" height="' + height + '" fill="' + CORNER + '"/>',
-    '  <g clip-path="url(#readmeFrame)">',
+    '<svg xmlns="http://www.w3.org/2000/svg" width="' + canvasW + '" height="' + canvasH + '" viewBox="0 0 ' + canvasW + ' ' + canvasH + '" font-family="' + FONT + '">',
+    '  <defs><clipPath id="readmeFrame"><rect x="' + PAD + '" y="' + PAD + '" width="' + width + '" height="' + height + '" rx="' + FRAME_RADIUS + '"/></clipPath>' + (defs || '') + '</defs>',
+    '  <rect width="' + canvasW + '" height="' + canvasH + '" fill="' + CORNER + '"/>',
+    ...shadows,
+    '  <g clip-path="url(#readmeFrame)"><g transform="translate(' + PAD + ' ' + PAD + ')">',
     body,
-    '  </g>',
-    '  <rect x="0.5" y="0.5" width="' + (width - 1) + '" height="' + (height - 1) + '" rx="' + (FRAME_RADIUS - 0.5) + '" fill="none" stroke="' + STROKE_COLOR + '" stroke-opacity="' + STROKE_OPACITY + '" stroke-width="1"/>',
+    '  </g></g>',
+    // 内描边：1px 白，压在卡片内侧
+    '  <rect x="' + (PAD + 0.5) + '" y="' + (PAD + 0.5) + '" width="' + (width - 1) + '" height="' + (height - 1)
+      + '" rx="' + (FRAME_RADIUS - 0.5) + '" fill="none" stroke="#FFFFFF" stroke-opacity="' + INNER_STROKE_OPACITY + '" stroke-width="1"/>',
+    // 上弧内侧再加 1px 高光（只在顶边直段上）
+    '  <line x1="' + (PAD + FRAME_RADIUS) + '" y1="' + (PAD + 0.5) + '" x2="' + (PAD + width - FRAME_RADIUS) + '" y2="' + (PAD + 0.5)
+      + '" stroke="#FFFFFF" stroke-opacity="' + TOP_ARC_OPACITY + '" stroke-width="1"/>',
+    // 外描边：1px 深线，落在卡片外侧
+    '  <rect x="' + (PAD - 0.5) + '" y="' + (PAD - 0.5) + '" width="' + (width + 1) + '" height="' + (height + 1)
+      + '" rx="' + (FRAME_RADIUS + 0.5) + '" fill="none" stroke="' + STROKE_COLOR + '" stroke-opacity="' + OUTER_STROKE_OPACITY + '" stroke-width="1"/>',
     '</svg>',
   ].join('\n');
 }
@@ -113,15 +148,16 @@ function weatherCardJob() {
   const bodyStart = svg.indexOf('</defs>') + '</defs>'.length;
   const body = svg.slice(bodyStart, svg.lastIndexOf('</svg>'));
   assert(!/undefined|NaN/.test(body), '天气卡出现了 undefined / NaN');
+  assert(!/feGaussianBlur|feTurbulence|filter=/.test(body), '天气卡里出现了 filter，质感 A 只许纯属性');
 
   return {
     name: 'weather-card',
     png: 'screenshot-card.png',
     svg: frameSvg({ width: W, height: H, defs: defsMatch[1], body }),
-    width: W,
-    height: H,
+    width: W + PAD * 2,
+    height: H + PAD * 2,
     scale: 2,
-    note: 'buildWeatherCardSvg() 真实渲染',
+    note: 'buildWeatherCardSvg() 真实渲染（质感 A）',
   };
 }
 
@@ -186,30 +222,30 @@ function reminderTimelineJob() {
     name: 'reminder',
     png: 'screenshot-reminder.png',
     svg: frameSvg({ width: D_W, height: D_H, defs, body }),
-    width: D_W,
-    height: D_H,
+    width: D_W + PAD * 2,
+    height: D_H + PAD * 2,
     scale: 2,
-    note: 'reminders.js 模板：evaluateWeatherReminder + 提醒内容',
+    note: 'reminders.js 模板：evaluateWeatherReminder + 提醒内容（质感 A 框）',
   };
 }
 
-// ── 图 B：对比图原地重导出（只补圆角与描边，画面内容一个字不改） ────────
+// ── 图 B：对比图原地重导出（只换框，画面内容一个字不改） ────────────────
 
-function compareHtml(base64) {
-  return [
-    '<!doctype html>',
-    '<meta charset="utf-8">',
-    '<style>',
-    '  html, body { margin: 0; padding: 0; width: 1280px; height: 720px; background: ' + CORNER + '; overflow: hidden; }',
-    '  .frame { position: relative; width: 1280px; height: 720px; border-radius: 24px; overflow: hidden; }',
-    '  .frame img { display: block; width: 1280px; height: 720px; }',
-    '  .stroke { position: absolute; inset: 0; border-radius: 24px; box-shadow: inset 0 0 0 1px rgba(21, 42, 59, ' + STROKE_OPACITY + '); }',
-    '</style>',
-    '<div class="frame">',
-    '  <img src="data:image/png;base64,' + base64 + '" alt="">',
-    '  <div class="stroke"></div>',
-    '</div>',
-  ].join('\n');
+function compareJob(base64) {
+  return {
+    name: 'compare',
+    png: 'screenshot-compare.png',
+    svg: frameSvg({
+      width: B_W,
+      height: B_H,
+      defs: '',
+      body: '    <image x="0" y="0" width="' + B_W + '" height="' + B_H + '" preserveAspectRatio="none" href="data:image/png;base64,' + base64 + '"/>',
+    }),
+    width: B_W + PAD * 2,
+    height: B_H + PAD * 2,
+    scale: 1,
+    note: '原地重导出：画面不动，只换质感 A 的框',
+  };
 }
 
 // ── PNG 自检（无依赖：只解第一行第一像素，用来验证圆角外侧填色） ──────────
@@ -242,6 +278,7 @@ function pngInfo(buffer) {
 
 const isCornerFill = (pixel) => Array.isArray(pixel) && pixel[0] === 0xf6 && pixel[1] === 0xf8 && pixel[2] === 0xfb;
 const hex = (pixel) => (pixel ? '#' + pixel.map((value) => value.toString(16).padStart(2, '0')).join('') : '--');
+const MAX_BYTES = 300 * 1024;
 
 // ── 渲染 ──────────────────────────────────────────────────────────────
 
@@ -278,12 +315,14 @@ function renderPng(chrome, sourceFile, pngFile, width, height, scale) {
 }
 
 async function verifyPng(file, job) {
+  const bytes = (await readFile(file)).length;
   const info = pngInfo(await readFile(file));
   assert(info.width === job.width * job.scale, job.png + ' 宽度不对：' + info.width);
   assert(info.height === job.height * job.scale, job.png + ' 高度不对：' + info.height);
   assert(info.colorType === 2, job.png + ' 不是 24 位 RGB PNG（colorType=' + info.colorType + '）');
   assert(isCornerFill(info.firstPixel), job.png + ' 四角不是 ' + CORNER + '：' + hex(info.firstPixel));
-  return info;
+  assert(bytes <= MAX_BYTES, job.png + ' 超过 300KB：' + Math.round(bytes / 1024) + 'KB');
+  return { ...info, bytes };
 }
 
 async function main() {
@@ -295,6 +334,7 @@ async function main() {
 
   const jobs = [weatherCardJob(), reminderTimelineJob()];
   const rows = [];
+  const hashes = [];
 
   for (const job of jobs) {
     const svgFile = path.join(tmpDir, job.name + '.svg');
@@ -302,24 +342,29 @@ async function main() {
     await writeFile(svgFile, job.svg, 'utf8');
     renderPng(chrome, svgFile, pngFile, job.width, job.height, job.scale);
     const info = await verifyPng(pngFile, job);
-    rows.push({ png: job.png, size: info.width + '×' + info.height, bytes: (await readFile(pngFile)).length, note: job.note });
+    rows.push({ png: job.png, size: info.width + '×' + info.height, bytes: info.bytes, note: job.note });
+    hashes.push(job.png + '  ' + (await import('node:crypto')).createHash('sha256').update(await readFile(pngFile)).digest('hex'));
   }
 
-  // 图 B：原地重导出。已经套过框（左上角已是 #F6F8FB）就跳过，重复跑不会越描越黑。
+  // 图 B：原地重导出。已经套过框（画布 = 1328×768、左上角 #F6F8FB）就跳过，重复跑不会越描越黑。
   const compareFile = path.join(ASSETS, 'screenshot-compare.png');
   const compareInfo = pngInfo(await readFile(compareFile));
-  assert(compareInfo.width === 1280 && compareInfo.height === 720, '对比图不是 1280×720：' + compareInfo.width + '×' + compareInfo.height);
-  if (isCornerFill(compareInfo.firstPixel)) {
-    rows.push({ png: 'screenshot-compare.png', size: '1280×720', bytes: (await readFile(compareFile)).length, note: '已套框，跳过重导出' });
+  const framedW = B_W + PAD * 2;
+  const framedH = B_H + PAD * 2;
+  if (compareInfo.width === framedW && compareInfo.height === framedH && isCornerFill(compareInfo.firstPixel)) {
+    rows.push({ png: 'screenshot-compare.png', size: framedW + '×' + framedH, bytes: (await readFile(compareFile)).length, note: '已套框，跳过重导出' });
   } else {
-    const base64 = (await readFile(compareFile)).toString('base64');
-    const htmlFile = path.join(tmpDir, 'compare.html');
+    assert(compareInfo.width === B_W && compareInfo.height === B_H,
+      '对比图尺寸既不是 ' + B_W + '×' + B_H + ' 也不是 ' + framedW + '×' + framedH + '：' + compareInfo.width + '×' + compareInfo.height);
+    const job = compareJob((await readFile(compareFile)).toString('base64'));
+    const svgFile = path.join(tmpDir, 'compare.svg');
     const tempPng = path.join(tmpDir, 'compare.png');
-    await writeFile(htmlFile, compareHtml(base64), 'utf8');
-    renderPng(chrome, htmlFile, tempPng, 1280, 720, 1);
-    const info = await verifyPng(tempPng, { png: 'screenshot-compare.png', width: 1280, height: 720, scale: 1 });
+    await writeFile(svgFile, job.svg, 'utf8');
+    renderPng(chrome, svgFile, tempPng, job.width, job.height, job.scale);
+    const info = await verifyPng(tempPng, job);
     await writeFile(compareFile, await readFile(tempPng));
-    rows.push({ png: 'screenshot-compare.png', size: info.width + '×' + info.height, bytes: (await readFile(compareFile)).length, note: '原地重导出：24px 圆角 + 1px 描边' });
+    rows.push({ png: 'screenshot-compare.png', size: info.width + '×' + info.height, bytes: info.bytes, note: job.note });
+    hashes.push('screenshot-compare.png  ' + (await import('node:crypto')).createHash('sha256').update(await readFile(compareFile)).digest('hex'));
   }
 
   // D2：关心版不入 README；天气卡统一叫 screenshot-card.png —— 清掉阶段一留下的旧文件名。
@@ -338,6 +383,8 @@ async function main() {
   for (const row of rows) {
     console.log('  ' + row.png.padEnd(30) + row.size.padEnd(12) + (Math.round(row.bytes / 1024) + 'KB').padEnd(7) + row.note);
   }
+  console.log('sha256：');
+  for (const line of hashes) console.log('  ' + line);
 }
 
 main().catch((error) => {
