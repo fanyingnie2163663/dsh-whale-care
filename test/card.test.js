@@ -3,7 +3,7 @@ import nodeAssert from 'node:assert/strict'
 import { makeChecker } from './harness.js'
 
 // 离线单测：每日天气卡的版式与口径（BRIEF §3/§4/§7 里可判定的部分）。
-import { buildWeatherCardSvg, CARD_SIZE, CARD_PHASE } from '../lib/card.js';
+import { buildWeatherCardSvg, CARD_SIZE, CARD_PHASE, CARD_ADVICE_MAX_WIDTH, measureCardText } from '../lib/card.js';
 
 const { ok: assert, total } = makeChecker()
 
@@ -99,6 +99,31 @@ assert(!noRange.includes('stroke-width="8"'), '没有区间数据就不画地平
 assert(late.includes('明天</text>') && !early.includes('明天</text>'), '晚版多一条「明天」通栏');
 assert(!late.includes('明天 9~15°'), '晚版页脚不再重复明日一行');
 assert(late.includes('cx="60"') && early.includes('cx="640"'), '光斑圆心早晚不同（位移 ≥300）');
+assert(!early.includes('y1="380"') && !late.includes('y1="380"'), '暮线已删（§9.2）');
 
-  nodeAssert.equal(total(), 35, '断言总数 35')
+// 11. 建议区（BRIEF §9.1）：每条单行、≤558px、最多三条、不截断
+const adviceOf = (svg) => [...svg.matchAll(/<text x="76"[^>]*>([^<]*)<\/text>/g)].map((m) => m[1]);
+const advice = adviceOf(early);
+assert(advice.length <= 3, '建议最多三条，实际 ' + advice.length);
+assert(advice.every((line) => measureCardText(line, 36) <= CARD_ADVICE_MAX_WIDTH), '每条建议 ≤558px（单行）');
+assert(advice.every((line) => !line.endsWith('…')), '不许截断加省略号');
+assert(advice.length === 3, '本快照三条都装得下（穿衣 / 带伞 / 口罩）');
+
+// 12. alert（BRIEF §9.3）：降雨不进 alert；AQI ≥ 100 时换竖线颜色，不添线
+assert(!early.includes('#FF6F61'), '降雨 96% 不触发 alert');
+const badAir = buildWeatherCardSvg({ ...DATA, air: { aqi: 120, pm25: 95 } }, PROFILE, { now: at(8, 0) });
+assert(badAir.includes('stroke="#FF6F61"'), 'AQI ≥ 100 时建议竖线换 alert 色');
+assert((badAir.match(/#FF6F61/g) || []).length === 1, 'alert 全卡只出现一处');
+
+// 13. 节日并入日期行（BRIEF §9.4）：同一条 text，无节日就整段省略
+const dateOf = (svg) => (svg.match(/<text x="48" y="92"[^>]*>([^<]*)<\/text>/) || [])[1];
+assert(dateOf(early) === '11 月 3 日 · 周二', '2026-11-03 不是节气，日期行不硬写节日');
+const liDong = buildWeatherCardSvg(DATA, PROFILE, { now: new Date(2026, 10, 7, 8, 0) });
+assert(dateOf(liDong) === '11 月 7 日 · 周六 · 立冬', '11-07 立冬并进同一条日期行');
+
+// 14. 文本节点预算（BRIEF §9.5）：早 ≤17、晚 ≤18
+assert(texts(early).length <= 17, '早版文本节点 ≤17，实际 ' + texts(early).length);
+assert(texts(late).length <= 18, '晚版文本节点 ≤18，实际 ' + texts(late).length);
+
+  nodeAssert.equal(total(), 47, '断言总数 47')
 })
