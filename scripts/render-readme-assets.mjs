@@ -4,9 +4,11 @@
 // 规格来自 notes/design/2026-11-18-readme-visual.md §4 与 notes/design/2026-11-18-texture-v2.md §4：
 //   · §4.2 一套框：四角填 #F6F8FB（不透明）、圆角视觉 12px（720 坐标 24 / 1440 文件像素 48 / B 文件 24）、
 //     内侧 1px rgba(21,42,59,0.12) 描边、无阴影；
-//   · 质感 A 把框升级为「内外双描边 + 4 层阶梯投影」：投影 dy 6/9/12/15、透明度 7/5/3/2%、色 #152A3B，
+//   · 质感 A 把框升级为「外描边 + 4 层阶梯投影」：投影 dy 6/9/12/15、透明度 7/5/3/2%、色 #152A3B，
 //     纯属性圆角矩形叠加（§8#4「阶梯投影 = 纯属性」），**不开任何 filter**。
 //     投影要落在卡片外面，所以画布四周留白 PAD=24，三张图同一处理。
+//   · §14.3 收口改「一行一层」：框内白描边整条删（它 13.75× 于卡顶白，永远盖住卡自己的收口）。
+//     第 0 行框外描边 / 第 1 行卡顶亮线 / 第 978 行卡底暗线 / 第 979 行框外描边 —— 外深内亮才是一道真棱。
 //   · §4.3 图 C 是 lib/card.js 的真实渲染；图 D 是时间轴版（1px 轴 / 8px 节点 / 28px 时间 / 32px 正文 / 行距 48）；
 //   · §4.4 数据冻结：合肥 · 2026-11-03 · 阿宁 · 怕冷 / 骑车 / 有鼻炎。
 // 文案底线：图里每句话都能指回 lib/ 里的代码或真实模板，脚本不写话术。
@@ -43,8 +45,6 @@ const PAD = 24;                 // 画布四周留白，给投影落下来（@2x
 const CORNER = '#F6F8FB';       // 圆角外侧填充，不透明
 const STROKE_COLOR = '#152a3b';
 const OUTER_STROKE_OPACITY = '0.14';
-const INNER_STROKE_OPACITY = '0.55';
-const TOP_ARC_OPACITY = '0.18';
 // 4 层阶梯投影：越远的层越淡，叠出「放在纸上」的落影（§4，纯属性）
 const SHADOW = [
   { dy: 6, opacity: 0.07 },
@@ -122,13 +122,8 @@ function frameSvg({ width, height, defs, body }) {
     '  <g clip-path="url(#readmeFrame)"><g transform="translate(' + PAD + ' ' + PAD + ')">',
     body,
     '  </g></g>',
-    // 内描边：1px 白，压在卡片内侧
-    '  <rect x="' + (PAD + 0.5) + '" y="' + (PAD + 0.5) + '" width="' + (width - 1) + '" height="' + (height - 1)
-      + '" rx="' + (FRAME_RADIUS - 0.5) + '" fill="none" stroke="#FFFFFF" stroke-opacity="' + INNER_STROKE_OPACITY + '" stroke-width="1"/>',
-    // 上弧内侧再加 1px 高光（只在顶边直段上）
-    '  <line x1="' + (PAD + FRAME_RADIUS) + '" y1="' + (PAD + 0.5) + '" x2="' + (PAD + width - FRAME_RADIUS) + '" y2="' + (PAD + 0.5)
-      + '" stroke="#FFFFFF" stroke-opacity="' + TOP_ARC_OPACITY + '" stroke-width="1"/>',
-    // 外描边：1px 深线，落在卡片外侧
+    // 外描边：1px 深线，画在卡的轮廓之外一行 —— 与卡自己的收口组成「深线 + 亮线」这道棱。
+    // 注意：不能压到卡的最外一行上 —— 14% 的深线落在深色卡身上 Δ≈1.6/255，等于隐身（实测）。
     '  <rect x="' + (PAD - 0.5) + '" y="' + (PAD - 0.5) + '" width="' + (width + 1) + '" height="' + (height + 1)
       + '" rx="' + (FRAME_RADIUS + 0.5) + '" fill="none" stroke="' + STROKE_COLOR + '" stroke-opacity="' + OUTER_STROKE_OPACITY + '" stroke-width="1"/>',
     '</svg>',
