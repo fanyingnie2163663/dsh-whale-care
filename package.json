@@ -34,7 +34,7 @@
   ],
   "scripts": {
     "demo": "node scripts/demo.mjs",
-    "test": "node --test \"test/**/*.test.js\"",
+    "test": "node --test --test-concurrency=12 \"test/**/*.test.js\"",
     "typecheck": "tsc -p tsconfig.check.json",
     "lint": "oxlint lib test",
     "check": "npm run typecheck && npm run lint && npm test"

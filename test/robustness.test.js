@@ -266,10 +266,10 @@ const day = (md, max, min, extra = {}) => ({ label: md, date: md, min, max, desc
     ],
   })
   const stale = await US.loadWeeklyUsage({ now })
-  week.ok(stale.source === 'dshw-usage' && stale.from === '2026-11-12' && stale.to === '2026-11-18', '快照过期后回退账本，默认滚动 7 天 D-6…D0')
+  week.ok(stale.source === 'dshw-usage' && stale.from === '2026-11-16' && stale.to === '2026-11-22', '快照过期后回退账本，默认窗口 = 本周一~周日')
   week.ok(stale.tokens === 350 && stale.cost === 0.75 && stale.turns === 2, '账本按 events 求和，窗口外那条 999 不算')
-  const mondayWin = await US.loadWeeklyUsage({ now, window: 'monday' })
-  week.ok(mondayWin.from === '2026-11-16' && mondayWin.to === '2026-11-22' && mondayWin.tokens === 350, 'window=monday 时换成周一~周日，同一份账本')
+  const rolling = await US.loadWeeklyUsage({ now, window: 'rolling' })
+  week.ok(rolling.from === '2026-11-12' && rolling.to === '2026-11-18' && rolling.tokens === 350, 'window=rolling 切 D-6…D0，同一份账本')
 
   // 3) 只有 events、没有 history（且只有 ts 没有 day）→ 用 ts 推本地日期
   writeSnap('not-json')

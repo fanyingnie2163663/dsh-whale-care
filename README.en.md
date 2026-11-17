@@ -217,6 +217,12 @@ Not a dashboard: one card with today, tomorrow, and at most three suggestions.
 
 <sub>A 720×980 weather card; the host turns it into an image and sends it.</sub>
 
+<p align="center"><img src="assets/screenshot-week.png" width="384" alt="Weekly review card"></p>
+
+The weekly card (`weather_card` with `period: "week"`): inside one ISO week the temperature grows right (today → Sunday) and the mood line grows left (Monday → today); the last cell is this week's token usage.
+
+<sub>Same frozen sample: Hefei · 2026-11-18.</sub>
+
 A reminder is not a separate thing: it is the same card in time form.
 
 <img src="assets/screenshot-reminder.png" width="384" alt="Reminders on time">

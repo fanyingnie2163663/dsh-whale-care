@@ -228,6 +228,12 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 
 <sub>720×980 的天气卡，宿主转成图片直接发到聊天里。</sub>
 
+<p align="center"><img src="assets/screenshot-week.png" width="384" alt="每周回顾卡"></p>
+
+周卡（`weather_card` 的 `period: "week"`）：在一个 ISO 周里，温度往右长（今天→周日）、情绪往左长（周一→今天），最右边是本周 token 用量。
+
+<sub>同一份冻结样本：合肥 · 2026-11-18。</sub>
+
 提醒不是另一套东西，是同一张卡的时间版。
 
 <img src="assets/screenshot-reminder.png" width="384" alt="到点提醒">

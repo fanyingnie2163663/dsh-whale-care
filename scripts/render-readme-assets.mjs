@@ -24,6 +24,8 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
 
 import { CARD_SIZE, buildWeatherCardSvg } from '../lib/card.js';
+import { buildWeeklyCardSvg } from '../lib/card-week.js';
+import { buildWeeklyReview } from '../lib/weekly.js';
 import { buildCareBrief } from '../lib/care.js';
 import { evaluateWeatherReminder, sanitizeReminder } from '../lib/reminders.js';
 
@@ -163,6 +165,62 @@ function weatherCardJob() {
     height: H + PAD * 2,
     scale: 2,
     note: 'buildWeatherCardSvg() 真实渲染（质感 A）',
+  };
+}
+
+// ── 图 E：每周回顾卡（lib/card-week.js 真实渲染） ──────────────────────
+// 冻结样本与图 C 同一套口径：合肥 · 2026-11-18（周三）21:00 · 阿宁。
+// 周卡要看的是「一个 ISO 周、两段方向」：温度往右（今天→周日）、情绪往左（周一→今天）。
+const WEEK_SAMPLE_NOW = new Date(2026, 10, 18, 21, 0);
+const WEEK_SAMPLE_DATA = {
+  place: '合肥',
+  air: { aqi: 53, pm25: 37.4 },
+  days: [
+    { label: '11-18', date: '11-18', min: 6, max: 13, desc: '多云', rain: 36, wind: 12, precip: 0, hours: {} },
+    { label: '11-19', date: '11-19', min: 3, max: 12, desc: '多云', rain: 9, wind: 12, precip: 0, hours: {} },
+    { label: '11-20', date: '11-20', min: 4, max: 14, desc: '小雨', rain: 55, wind: 12, precip: 2, hours: {} },
+    { label: '11-21', date: '11-21', min: 3.1, max: 15.8, desc: '晴', rain: 0, wind: 10, precip: 0, hours: {} },
+    { label: '11-22', date: '11-22', min: 4.6, max: 14.9, desc: '阴', rain: 4, wind: 10, precip: 0, hours: {} },
+    { label: '11-23', date: '11-23', min: 8.3, max: 14.8, desc: '小雨', rain: 33, wind: 9, precip: 0, hours: {} },
+    { label: '11-24', date: '11-24', min: 1.3, max: 12.3, desc: '阴', rain: 17, wind: 9, precip: 0, hours: {} },
+  ],
+};
+const WEEK_SAMPLE_MOODS = [
+  { date: '2026-11-16', score: 3, at: Date.parse('2026-11-16T21:00:00'), note: '' },
+  { date: '2026-11-17', score: 2, at: Date.parse('2026-11-17T14:00:00'), note: '' },
+  { date: '2026-11-17', score: 4, at: Date.parse('2026-11-17T22:00:00'), note: '' },
+  { date: '2026-11-18', score: 2, at: Date.parse('2026-11-18T20:00:00'), note: '' },
+];
+const WEEK_SAMPLE_REMINDERS = [
+  { id: 'readme-pill', label: '吃降压药', time: '08:00', intent: 'text', enabled: true, createdAt: Date.parse('2026-11-17T09:00:00') },
+  { id: 'readme-checkup', label: '体检', time: '08:30', intent: 'text', date: '2026-11-20', enabled: true, createdAt: Date.parse('2026-11-01T09:00:00') },
+];
+const WEEK_SAMPLE_USAGE = { tokens: 1234567, cost: 12.5, turns: 42, from: '2026-11-16', to: '2026-11-18', source: 'readme-sample' };
+
+function weeklyCardJob() {
+  const review = buildWeeklyReview({
+    data: WEEK_SAMPLE_DATA,
+    moods: WEEK_SAMPLE_MOODS,
+    reminders: WEEK_SAMPLE_REMINDERS,
+    usage: WEEK_SAMPLE_USAGE,
+    profile: SAMPLE_PROFILE,
+    now: WEEK_SAMPLE_NOW,
+  });
+  const raw = buildWeeklyCardSvg(review, SAMPLE_PROFILE, { now: WEEK_SAMPLE_NOW, reminders: WEEK_SAMPLE_REMINDERS });
+  const defsMatch = raw.match(/<defs>([\s\S]*?)<\/defs>/);
+  assert(defsMatch, '周卡输出的 <defs> 没找到，卡片结构变了');
+  const body = raw.slice(raw.indexOf('</defs>') + '</defs>'.length, raw.lastIndexOf('</svg>'));
+  assert(!/undefined|NaN/.test(body), '周卡出现了 undefined / NaN');
+  assert(!/feGaussianBlur|feTurbulence|filter=/.test(body), '周卡里出现了 filter，质感 A 只许纯属性');
+  assert(body.includes('第 47 周') && body.includes('本周 Token'), '周卡冻结样本缺周号或 token 格');
+  return {
+    name: 'weekly-card',
+    png: 'screenshot-week.png',
+    svg: frameSvg({ width: W, height: H, defs: defsMatch[1], body }),
+    width: W + PAD * 2,
+    height: H + PAD * 2,
+    scale: 2,
+    note: 'buildWeeklyCardSvg() 真实渲染（ISO 周 + 双窗 + token 用量）',
   };
 }
 
@@ -510,7 +568,11 @@ async function main() {
   await mkdir(ASSETS, { recursive: true });
 
   const compare = compareJob();
-  const jobs = [compare, weatherCardJob(), reminderTimelineJob()];
+  // 只渲指定的一张：node scripts/render-readme-assets.mjs weekly-card
+  // （已发布的三张不要随手重出 —— 换台机器/换 Chrome 版本会改字节，日卡 sha 是「渲染没动」的证据）
+  const only = process.argv[2];
+  const jobs = [compare, weatherCardJob(), reminderTimelineJob(), weeklyCardJob()]
+    .filter((job) => !only || job.name === only);
   const rows = [];
   const hashes = [];
 
