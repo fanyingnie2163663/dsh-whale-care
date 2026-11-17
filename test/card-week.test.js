@@ -69,26 +69,33 @@ test('weekly card', async () => {
   assert(svg.startsWith('<svg') && svg.endsWith('</svg>'), '是一个完整 SVG')
   checkBudget(svg)
   assert(svg.includes('第 47 周') && svg.includes('11 月 16 – 22 日'), '头：第 47 周 + 本周区间')
+  // 规格 v1.1 的新区带（159 行）：头 40–124 / 导语 148–256 / 温度 280–508 / 情绪 532–692 / 事实 716–792 / 提醒 816–892
+  assert(svg.includes('<text x="48" y="66"') && svg.includes('<text x="48" y="116"'), '头两行基线 66 / 116')
+  assert(svg.includes('<text x="76" y="190"') && svg.includes('<text x="76" y="245"'), '导语基线 190 / 245（行距 55）')
+  assert(svg.includes('y1="388" x2="672" y2="388"'), '温度带中线在 388（= 300/476 中点）')
+  assert(svg.includes('<text x="48" y="744"') && svg.includes('y="788"'), '事实带标签 @744 / 值 @788')
+  assert(svg.includes('<text x="68" y="840"') && svg.includes('<text x="68" y="872"'), '提醒基线 840 / 872')
+  assert(svg.includes('y1="610"') && svg.includes('<text x="48" y="940"'), '情绪中性基线 610 / 脚 940')
   // 7 列 = 周一…周日；今天在第 3 列，两张图同一个 x（§9-2）
-  const todayLabels = [...svg.matchAll(/<text x="([\d.]+)" y="(496|684)"[^>]*>今天<\/text>/g)];
+  const todayLabels = [...svg.matchAll(/<text x="([\d.]+)" y="(504|692)"[^>]*>今天<\/text>/g)];
   assert(todayLabels.length === 2 && todayLabels.every((m) => Number(m[1]) === WEEK_COLUMNS[2]), '两张图的「今天」都在第 3 列 x≈270.9')
   // 温度带只画今天→周日：周一 / 周二两列没有点（那是过去的预报，不存在）
   const circleOf = (source) => [...source.matchAll(/<circle cx="([\d.]+)" cy="([\d.]+)" r="([\d.]+)"/g)]
     .map((m) => ({ cx: Number(m[1]), cy: Number(m[2]), r: Number(m[3]) }));
-  const tempDots = circleOf(svg).filter((c) => c.cy >= 292 && c.cy <= 468);
+  const tempDots = circleOf(svg).filter((c) => c.cy >= 300 && c.cy <= 476);
   assert(!tempDots.some((c) => c.cx === WEEK_COLUMNS[0] || c.cx === WEEK_COLUMNS[1]), '周一/周二不画温度点')
   assert(tempDots.some((c) => c.cx === WEEK_COLUMNS[2] && c.r === 4.5), '今天（第 3 列）的点更大：9px')
   // 情绪线只画周一→今天：周四之后没有点、也没有空心圈
-  assert(!circleOf(svg).some((c) => c.cy >= 524 && c.cx === WEEK_COLUMNS[3]), '周四（未来）不画情绪点')
+  assert(!circleOf(svg).some((c) => c.cy >= 532 && c.cx === WEEK_COLUMNS[3]), '周四（未来）不画情绪点')
   // 情绪最低那天 avg=2 → 导语走第 2 条（16 当量，按 572 宽度折成两行）
   assert(svg.includes('周三 那天不太好，') && svg.includes('其他几天还行。'), '导语用第 2 条（折两行，行首不出标点）')
   assert(svg.includes('最暖 周六 16°') || (svg.includes('最暖') && svg.includes('周六 16°')), '事实左：最暖 周六 16°')
-  assert(svg.includes('最低') && svg.includes('周三 2'), '事实中：情绪最低 周三 2')
+  assert(svg.includes('情绪最低') && svg.includes('周三 2'), '事实中：情绪最低 周三 2')
   assert(svg.includes('本周 Token') && svg.includes('1.2M'), '事实右：1.2M（§10 格式）')
   assert(svg.includes('08:30 11 月 20 日 · 体检'), '提醒行：时间 + 时间表 + 内容')
   assert(svg.includes('08:00 每天 · 吃降压药'), '提醒行：每天')
   // 雨标只在有雨的天（周五 rain=55）
-  const rainMarks = [...svg.matchAll(/<line x1="([\d.]+)" y1="500"/g)].map((m) => Number(m[1]));
+  const rainMarks = [...svg.matchAll(/<line x1="([\d.]+)" y1="508"/g)].map((m) => Number(m[1]));
   assert(rainMarks.length === 3 && rainMarks.every((x) => x > WEEK_COLUMNS[3] && x < WEEK_COLUMNS[5]), '只有周五有 3 条雨标')
 
   // 导语第 5 条：没有 ≤2 分的日子、温差 <8、雨日 <3 → 记了 N 次 / 平均 X 分
@@ -133,7 +140,7 @@ test('weekly card', async () => {
 
   // ── 空态 4：无 usage → 事实带 2 栏 x=48/360 ────────────────────────
   const twoCol = buildWeeklyCardSvg(buildWeeklyReview({ data, moods, now }), {}, { now })
-  const factXs = [...twoCol.matchAll(/<text x="([\d.]+)" y="736"/g)].map((m) => Number(m[1]));
+  const factXs = [...twoCol.matchAll(/<text x="([\d.]+)" y="744"/g)].map((m) => Number(m[1]));
   assert(factXs.join(',') === '48,360', '2 栏时 x = 48 / 360（实际 ' + factXs.join(',') + '）')
   assert(!twoCol.includes('本周 Token'), '2 栏时没有 token 格')
 
@@ -141,7 +148,7 @@ test('weekly card', async () => {
   const few = buildWeeklyCardSvg(buildWeeklyReview({ data: { ...data, days: FORECAST_MIDWEEK.slice(0, 3) }, now }), {}, { now })
   assert(few.includes('week-range') && few.includes('stroke-width="8"'), '≤3 天：退化成 8px 区间条（cool→warm）')
   assert(!few.includes('<polyline'), '≤3 天：不画 7 列折线')
-  assert((few.match(/y="496"/g) || []).length === 2, '≤3 天：温度日标不画，只留两端值')
+  assert((few.match(/y="504"/g) || []).length === 2, '≤3 天：温度日标不画，只留两端值')
 
   // ── 空态 6：同温 ──────────────────────────────────────────────────
   const flat = buildWeeklyCardSvg(buildWeeklyReview({ data: { ...data, days: FORECAST_MIDWEEK.map((d) => ({ ...d, min: 12, max: 12 })) }, now }), {}, { now })
@@ -151,7 +158,7 @@ test('weekly card', async () => {
   // ── 空态 7：长城市名 → 14 全角当量 + … ─────────────────────────────
   const longCity = '内蒙古自治区呼伦贝尔市额尔古纳市恩和俄罗斯族民族乡'
   const longSvg = buildWeeklyCardSvg(buildWeeklyReview({ data: { ...data, place: longCity }, now }), {}, { now })
-  const head = /<text x="48" y="64"[^>]*>([^<]*)<\/text>/.exec(longSvg)?.[1] ?? ''
+  const head = /<text x="48" y="66"[^>]*>([^<]*)<\/text>/.exec(longSvg)?.[1] ?? ''
   assert(head.endsWith('…'), '长城市名截断加省略号（' + head + '）')
   assert(measureCardText(head, 28) <= 588, '头行 ≤588px（' + Math.round(measureCardText(head, 28)) + 'px）')
 
@@ -219,5 +226,5 @@ test('weekly card', async () => {
   rmSync(home, { recursive: true, force: true })
   delete process.env.DSH_HOME
 
-  nodeAssert.equal(total(), 66, '断言总数 66')
+  nodeAssert.equal(total(), 72, '断言总数 72')
 })
