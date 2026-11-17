@@ -57,12 +57,16 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 
 同一天、同一份偏好（合肥 · 2026-11-03 · 怕冷 / 骑车 / 有鼻炎），它说的是：
 
-> 阿宁，这么晚还没睡。合肥现在 13.8°C（体感 12.9°C），多云，湿度 78%。
-> 今天 13.2~19°C，白天薄外套配长袖，早晚换厚外套。
-> 今天有雨（96%），出门带把伞。
+> 阿宁，晚上好。
+> 合肥现在 13.8°C（体感 12.9°C），多云，湿度 78%。
+> 明天 9~15°C。
+> 白天穿夹克或风衣，早晚棉服，围巾戴上。
+> 明天最高只有 15°C，比今天低 4°C，你怕冷，外套和长裤都别省。
+> 今晚有雨（96%），出门带把伞。
 > 骑车路滑，慢一点。
-> 空气很差（AQI 83），出门戴口罩。
-> 早点睡吧，身体要紧。
+> 空气很差（AQI 83），你鼻子敏感，明天口罩戴好。
+> 明天阴，降雨概率 100%，伞先放门口。
+> 早点休息，别熬太晚。
 
 <details>
 <summary>偏好怎么改话术</summary>
@@ -118,7 +122,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 <details>
 <summary>参数与字段</summary>
 
-`weather`、`weather_care`、`weather_card` 吃两个参数：`city`（不传用 profile 里的城市）、`days`（1~3，默认 3）。`weather_profile` 的字段：
+`weather`、`weather_care` 吃两个参数：`city`（不传用 profile 里的城市）、`days`（1~3，默认 3）。`weather_profile` 的字段：
 
 | 字段 | 说明 |
 | --- | --- |

@@ -51,12 +51,18 @@ Then just ask:
 
 Same day, same profile (Hefei · 2026-11-03 · feels the cold, bikes, sensitive nose), verbatim:
 
-> 阿宁，这么晚还没睡。合肥现在 13.8°C（体感 12.9°C），多云，湿度 78%。
-> 今天 13.2~19°C，白天薄外套配长袖，早晚换厚外套。
-> 今天有雨（96%），出门带把伞。
+> 阿宁，晚上好。
+> 合肥现在 13.8°C（体感 12.9°C），多云，湿度 78%。
+> 明天 9~15°C。
+> 白天穿夹克或风衣，早晚棉服，围巾戴上。
+> 明天最高只有 15°C，比今天低 4°C，你怕冷，外套和长裤都别省。
+> 今晚有雨（96%），出门带把伞。
 > 骑车路滑，慢一点。
-> 空气很差（AQI 83），出门戴口罩。
-> 早点睡吧，身体要紧。
+> 空气很差（AQI 83），你鼻子敏感，明天口罩戴好。
+> 明天阴，降雨概率 100%，伞先放门口。
+> 早点休息，别熬太晚。
+>
+> <sub>(actual output is Chinese)</sub>
 
 <details>
 <summary>How preferences change it</summary>
@@ -110,7 +116,7 @@ Sample output (Hefei · 2026-11-03 snapshot):
 <details>
 <summary>Parameters and fields</summary>
 
-`weather`, `weather_care` and `weather_card` take `city` (defaults to the profile city) and `days` (1~3, default 3). Fields of `weather_profile`:
+`weather` and `weather_care` take `city` (defaults to the profile city) and `days` (1~3, default 3). Fields of `weather_profile`:
 
 | Field | Meaning |
 | --- | --- |

@@ -1,4 +1,4 @@
-// 生成 README 素材图：C 天气卡 / D 提醒时间轴 / B 对比图原地重导出。
+// 生成 README 素材图：B 对比图 / C 天气卡 / D 提醒时间轴。三张都从代码渲染，没有一张是历史静态图。
 // 用法：node scripts/render-readme-assets.mjs
 //
 // 规格来自 notes/design/2026-11-18-readme-visual.md §4 与 notes/design/2026-11-18-texture-v2.md §4：
@@ -10,6 +10,7 @@
 //   · §14.3 收口改「一行一层」：框内白描边整条删（它 13.75× 于卡顶白，永远盖住卡自己的收口）。
 //     第 0 行框外描边 / 第 1 行卡顶亮线 / 第 978 行卡底暗线 / 第 979 行框外描边 —— 外深内亮才是一道真棱。
 //   · §4.3 图 C 是 lib/card.js 的真实渲染；图 D 是时间轴版（1px 轴 / 8px 节点 / 28px 时间 / 32px 正文 / 行距 48）；
+//     图 B 左栏 = 冻结快照的原始字段，右栏 = lib/care.js 在 2026-11-03 20:00 + 冻结偏好下的逐字输出；
 //   · §4.4 数据冻结：合肥 · 2026-11-03 · 阿宁 · 怕冷 / 骑车 / 有鼻炎。
 // 文案底线：图里每句话都能指回 lib/ 里的代码或真实模板，脚本不写话术。
 // 渲染：headless Chrome 截图（C、D 用 2x；B 用 1x 保持 1280 内容宽），中间文件只写系统临时目录。
@@ -23,6 +24,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 import zlib from 'node:zlib';
 
 import { CARD_SIZE, buildWeatherCardSvg } from '../lib/card.js';
+import { buildCareBrief } from '../lib/care.js';
 import { evaluateWeatherReminder, sanitizeReminder } from '../lib/reminders.js';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -85,6 +87,7 @@ const SAMPLE_PROFILE = { city: '合肥', nickname: '阿宁', coldSensitive: true
 
 // 品牌名：与 lib/card.js 的 BRAND 一致（图 C 由 card.js 自己渲染，图 D 的页脚用它）。
 const BRAND = '小鲸鱼关心';
+const BRAND_ASCII = 'dsh-whale-care';
 
 const pad2 = (value) => String(value).padStart(2, '0');
 const SAMPLE_DAY = SAMPLE_NOW.getFullYear() + '-' + pad2(SAMPLE_NOW.getMonth() + 1) + '-' + pad2(SAMPLE_NOW.getDate());
@@ -99,6 +102,13 @@ const esc = (value) => String(value == null ? '' : value)
 function assert(condition, message) {
   if (!condition) throw new Error(message);
 }
+
+const unescapeXml = (value) => String(value)
+  .replace(/&lt;/g, '<')
+  .replace(/&gt;/g, '>')
+  .replace(/&quot;/g, '"')
+  .replace(/&apos;/g, "'")
+  .replace(/&amp;/g, '&');
 
 // ── 一套框（质感 A） ───────────────────────────────────────────────────
 
@@ -224,22 +234,194 @@ function reminderTimelineJob() {
   };
 }
 
-// ── 图 B：对比图原地重导出（只换框，画面内容一个字不改） ────────────────
+// ── 图 B：对比图（左 = 冻结快照的原始字段 / 右 = care.js 的逐字输出） ────
 
-function compareJob(base64) {
+// 配色取 BRIEF §4.2：深底 #091520→#12283A、ink #EDF4F9 / ink2 #A9BCCA、surface #152A3B、rule #22384A；
+// 右栏白卡用浅色主题的暖纸 #F6F1E8 + 深墨 #152230（同一套色，不另起）。
+const B = {
+  bgTop: '#091520',
+  bgBottom: '#12283A',
+  ink: '#EDF4F9',
+  ink2: '#A9BCCA',
+  surface: '#152A3B',
+  rule: '#22384A',
+  paper: '#F6F1E8',
+  paperInk: '#152230',
+  paperInk2: '#6B5F4E',
+};
+const CARE_MAX_EM = 21;     // 右栏一行最多多少「全角当量」（26px × 21 = 546px，栏内宽 554px）
+const CARE_SIZE = 26;
+const CARE_LEADING = 38;
+
+// 与 lib/card.js 同一套字宽估计（CJK/全角 1em、数字 0.56、拉丁 0.55）——折行和图里的一行一一对应。
+const careCharW = (ch) => {
+  const code = ch.codePointAt(0);
+  if (code >= 0x2e80 && code <= 0xa4cf) return 1;
+  if (code >= 0x3000 && code <= 0x303f) return 1;
+  if (code >= 0xff00 && code <= 0xff60) return 1;
+  if (code === 0x20) return 0.28;
+  if (code >= 0x30 && code <= 0x39) return 0.56;
+  if (code >= 0x21 && code <= 0x7e) return 0.55;
+  return 0.6;
+};
+
+/** 把 care 的逐字输出折成行：优先断在标点后，绝不把「12.9°C」「78%」这类数字+单位劈开。 */
+function wrapCare(text, maxEm) {
+  const chars = [...text];
+  const weights = chars.map(careCharW);
+
+  // 能不能在第 i 个字之前断行
+  const canBreak = (i) => {
+    const prev = chars[i - 1];
+    const next = chars[i];
+    const isNum = (c) => (c >= '0' && c <= '9') || c === '.';
+    if (prev === '°' || next === '°' || next === '%') return false;
+    if (isNum(prev) && isNum(next)) return false;
+    if (prev === '~' || next === '~') return false;
+    if ('（「‘《'.includes(prev)) return false;
+    if ('）」’。，！？、；：'.includes(next)) return false;
+    return true;
+  };
+  // 「软断点」= 标点之后，或左括号之前（宁可让「（体感 12.9°C）」整段留在同一行）
+  const isSoft = (i) => (i > 0 && '。！？，、；：'.includes(chars[i - 1])) || chars[i] === '（';
+
+  const lines = [];
+  let start = 0;
+  while (start < chars.length) {
+    let end = start;
+    let width = 0;
+    let soft = -1;
+    while (end < chars.length && width + weights[end] <= maxEm) {
+      width += weights[end];
+      end += 1;
+      if (end < chars.length && isSoft(end)) soft = end;
+    }
+    if (end >= chars.length) {
+      lines.push(chars.slice(start).join(''));
+      break;
+    }
+    let cut = -1;
+    if (soft > start && soft - start >= (end - start) * 0.6) cut = soft;
+    if (cut === -1) {
+      for (let k = end; k > start; k -= 1) {
+        if (canBreak(k) && k - start >= (end - start) * 0.5) {
+          cut = k;
+          break;
+        }
+      }
+    }
+    if (cut === -1) {
+      // 兜底：往前找不到，就往后找第一个能断的地方（最多溢出两个字）
+      let k = end;
+      while (k < chars.length && !canBreak(k)) k += 1;
+      cut = k;
+    }
+    lines.push(chars.slice(start, cut).join(''));
+    start = cut;
+  }
+  return lines;
+}
+
+const num = (value) => (Number.isInteger(Number(value)) ? String(Number(value)) : Number(value).toFixed(1));
+
+/** 左栏的 8 行原始字段，全部从 SAMPLE_DATA 取，不写死字符串。 */
+function rawFieldRows() {
+  const now = SAMPLE_DATA.now;
+  const today = SAMPLE_DATA.days[0];
+  const tomorrow = SAMPLE_DATA.days[1];
+  return [
+    ['当前温度', num(now.temp) + '°C'],
+    ['体感温度', num(now.feels) + '°C'],
+    ['湿度', now.humidity + '%'],
+    ['空气质量', 'AQI ' + SAMPLE_DATA.air.aqi],
+    ['今天区间', Math.round(today.min) + '~' + Math.round(today.max) + '°C'],
+    ['降雨概率', today.rain + '%'],
+    ['明天区间', Math.round(tomorrow.min) + '~' + Math.round(tomorrow.max) + '°C'],
+    ['明天降雨', tomorrow.rain + '%'],
+  ];
+}
+
+function profileTags(profile) {
+  const tags = [];
+  if (profile.coldSensitive) tags.push('怕冷');
+  if (profile.heatSensitive) tags.push('怕热');
+  if (profile.commute === 'bike') tags.push('骑车');
+  else if (profile.commute === 'walk') tags.push('走路');
+  if (profile.notes) tags.push(profile.notes);
+  return tags;
+}
+
+function compareBoardSvg(lines) {
+  const panelX = 64;
+  const panelY = 190;
+  const panelW = 470;
+  const panelH = 420;
+  const bubbleX = 590;
+  const bubbleY = 150;
+  const bubbleW = 626;
+  const bubbleH = 460;
+  const body = [];
+
+  body.push('    <rect width="' + B_W + '" height="' + B_H + '" fill="url(#compareBg)"/>');
+  body.push('    ' + textNode(64, 96, '同一天气，两种说法', 'font-size="44" font-weight="600" fill="' + B.ink + '"'));
+  body.push('    ' + textNode(64, 138, BRAND_ASCII + ' · ' + BRAND, 'font-size="24" fill="' + B.ink2 + '"'));
+
+  // 左：接口原始数据
+  body.push('    <rect x="' + panelX + '" y="' + panelY + '" width="' + panelW + '" height="' + panelH
+    + '" rx="24" fill="' + B.surface + '" stroke="' + B.rule + '" stroke-width="1"/>');
+  body.push('    ' + textNode(panelX + 32, panelY + 42, '接口原始数据', 'font-size="22" fill="' + B.ink2 + '"'));
+  rawFieldRows().forEach(([label, value], index) => {
+    const y = panelY + 94 + index * 40;
+    body.push('    ' + textNode(panelX + 32, y, label, 'font-size="22" fill="' + B.ink2 + '"'));
+    body.push('    ' + textNode(panelX + panelW - 32, y, value, 'font-size="26" font-weight="600" fill="' + B.ink + '" text-anchor="end"'));
+  });
+
+  // 右：它说的话（白卡 = 浅色主题的暖纸）
+  body.push('    <rect x="' + bubbleX + '" y="' + bubbleY + '" width="' + bubbleW + '" height="' + bubbleH
+    + '" rx="28" fill="' + B.paper + '"/>');
+  body.push('    ' + textNode(bubbleX + 36, bubbleY + 50, '它说的话', 'font-size="20" fill="' + B.paperInk2 + '"'));
+  lines.forEach((line, index) => {
+    body.push('    ' + textNode(bubbleX + 36, bubbleY + 96 + index * CARE_LEADING, line,
+      'font-size="' + CARE_SIZE + '" fill="' + B.paperInk + '" class="care-line"'));
+  });
+
+  // 出处：这是图的内容，不是图注
+  body.push('    ' + textNode(64, 688, '真实数据与真实输出：Open-Meteo · ' + SAMPLE_DATA.place + ' · ' + SAMPLE_DAY
+    + ' · 偏好档「' + profileTags(SAMPLE_PROFILE).join('、') + '」', 'font-size="20" fill="' + B.ink2 + '"'));
+
+  const defs = '<linearGradient id="compareBg" x1="0" y1="0" x2="0" y2="1">'
+    + '<stop offset="0" stop-color="' + B.bgTop + '"/><stop offset="1" stop-color="' + B.bgBottom + '"/></linearGradient>';
+
+  return {
+    defs,
+    body: body.join('\n'),
+  };
+}
+
+function compareJob() {
+  const brief = buildCareBrief(SAMPLE_DATA, SAMPLE_PROFILE, { now: SAMPLE_NOW });
+  assert(brief && typeof brief === 'string' && brief.length > 40, 'care.js 没给出可用的一段话');
+  assert(!/undefined|NaN/.test(brief), '关心版输出里出现 undefined / NaN');
+  const lines = wrapCare(brief, CARE_MAX_EM);
+  assert(lines.length > 0 && lines.every((line) => line.trim() === line && line.length > 0), '折行结果有空行/首尾空格');
+  assert(lines.join('') === brief, '折行把字弄丢了：拼回来必须与 care.js 的逐字输出相等');
+
+  const board = compareBoardSvg(lines);
+  // 回读：把 SVG 里右栏的 text 节点解析出来，必须与 lines 一条不差（这条就是「图 B 右栏 = 生成器文字」的证据）
+  const parsed = [...board.body.matchAll(/<text [^>]*class="care-line"[^>]*>([^<]*)<\/text>/g)].map((m) => unescapeXml(m[1]));
+  assert(parsed.length === lines.length && parsed.every((line, i) => line === lines[i]), '对比图右栏文字与生成器文字不一致');
+
+  const framed = frameSvg({ width: B_W, height: B_H, defs: board.defs, body: board.body });
   return {
     name: 'compare',
     png: 'screenshot-compare.png',
-    svg: frameSvg({
-      width: B_W,
-      height: B_H,
-      defs: '',
-      body: '    <image x="0" y="0" width="' + B_W + '" height="' + B_H + '" preserveAspectRatio="none" href="data:image/png;base64,' + base64 + '"/>',
-    }),
+    svg: framed,
     width: B_W + PAD * 2,
     height: B_H + PAD * 2,
     scale: 1,
-    note: '原地重导出：画面不动，只换质感 A 的框',
+    note: 'care.js 逐字输出 + 冻结快照原始字段',
+    lines,
+    brief,
   };
 }
 
@@ -327,7 +509,8 @@ async function main() {
   const tmpDir = await mkdtemp(path.join(os.tmpdir(), 'dsh-whale-care-assets-'));
   await mkdir(ASSETS, { recursive: true });
 
-  const jobs = [weatherCardJob(), reminderTimelineJob()];
+  const compare = compareJob();
+  const jobs = [compare, weatherCardJob(), reminderTimelineJob()];
   const rows = [];
   const hashes = [];
 
@@ -339,27 +522,6 @@ async function main() {
     const info = await verifyPng(pngFile, job);
     rows.push({ png: job.png, size: info.width + '×' + info.height, bytes: info.bytes, note: job.note });
     hashes.push(job.png + '  ' + (await import('node:crypto')).createHash('sha256').update(await readFile(pngFile)).digest('hex'));
-  }
-
-  // 图 B：原地重导出。已经套过框（画布 = 1328×768、左上角 #F6F8FB）就跳过，重复跑不会越描越黑。
-  const compareFile = path.join(ASSETS, 'screenshot-compare.png');
-  const compareInfo = pngInfo(await readFile(compareFile));
-  const framedW = B_W + PAD * 2;
-  const framedH = B_H + PAD * 2;
-  if (compareInfo.width === framedW && compareInfo.height === framedH && isCornerFill(compareInfo.firstPixel)) {
-    rows.push({ png: 'screenshot-compare.png', size: framedW + '×' + framedH, bytes: (await readFile(compareFile)).length, note: '已套框，跳过重导出' });
-  } else {
-    assert(compareInfo.width === B_W && compareInfo.height === B_H,
-      '对比图尺寸既不是 ' + B_W + '×' + B_H + ' 也不是 ' + framedW + '×' + framedH + '：' + compareInfo.width + '×' + compareInfo.height);
-    const job = compareJob((await readFile(compareFile)).toString('base64'));
-    const svgFile = path.join(tmpDir, 'compare.svg');
-    const tempPng = path.join(tmpDir, 'compare.png');
-    await writeFile(svgFile, job.svg, 'utf8');
-    renderPng(chrome, svgFile, tempPng, job.width, job.height, job.scale);
-    const info = await verifyPng(tempPng, job);
-    await writeFile(compareFile, await readFile(tempPng));
-    rows.push({ png: 'screenshot-compare.png', size: info.width + '×' + info.height, bytes: info.bytes, note: job.note });
-    hashes.push('screenshot-compare.png  ' + (await import('node:crypto')).createHash('sha256').update(await readFile(compareFile)).digest('hex'));
   }
 
   // D2：关心版不入 README；天气卡统一叫 screenshot-card.png —— 清掉阶段一留下的旧文件名。
@@ -380,6 +542,11 @@ async function main() {
   }
   console.log('sha256：');
   for (const line of hashes) console.log('  ' + line);
+
+  // 图 B 右栏的逐字文字：README 两版的引用块必须与这段一字不差
+  console.log();
+  console.log('图 B 右栏逐字（README 引用块必须与它逐字相同）：');
+  console.log('CARE_LINES=' + JSON.stringify(compare.lines));
 }
 
 main().catch((error) => {
