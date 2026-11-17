@@ -87,7 +87,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 | `weather` | 详细播报：当前、空气、三天预报、常规建议 |
 | `weather_care` | 关心版：按偏好和时段写成一段能直接发出去的话 |
 | `care_brief` | 短版关心：挑最多三条 + 今天到点的提醒 |
-| `weather_profile` | 偏好读写：城市、称呼、怕冷怕热、出行、伞、备注 |
+| `weather_profile` | 偏好读写：城市、称呼、冷暖、出行、伞、备注 |
 | `weather_reminder` | 提醒：每天 / 每周几 / 一次性 / 每年，或按天气条件 |
 | `weather_alert` | 极端天气预警，黄橙红三级，当天不重复 |
 | `weather_card` | 生成 720×980 天气卡（SVG），宿主转图发送 |
@@ -191,16 +191,23 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 <details>
 <summary>接入别的插件的印象</summary>
 
-定义：**外部插件写的用户印象快照**，本插件只读不写，也不依赖它；没有这个文件一切正常。
+定义：写在本机 `$DSH_HOME/whale-weather/user-context.json` 的**外部插件用户印象快照**，本插件只读不写，也不依赖它；没有这个文件一切正常。
 
-- `profile.json` 的值永远优先，快照只补没填的字段：出行方式、怕冷怕热、健康备注；超过 7 天没更新视为过期，文件不存在 / JSON 坏了 / 版本不对一律当没有；
+- `profile.json` 的值永远优先，快照只补没填的字段：出行方式、怕冷怕热、健康备注；`version` 不是 1、缺 `updatedAt`、或超过 7 天没更新一律当没有（示例里的毫秒值照抄迟早过期，写文件时换成 `Date.now()`）；
 - 只做关键词匹配（骑车 / 步行 / 公交 / 开车，怕冷 / 怕热，鼻炎 / 过敏），匹配不上就不猜；写快照是宿主的事。
 
 ```json
 {
   "version": 1,
+  "updatedAt": 1794960000000,
   "source": "qq-bridge",
-  "user": { "traits": ["平时骑车上班", "有鼻炎"], "interactionCount": 3 }
+  "user": {
+    "qq": "100000001",
+    "displayName": "示例用户",
+    "traits": ["平时骑车上班", "有鼻炎"],
+    "interactionCount": 3,
+    "lastSeenAt": 1794864000000
+  }
 }
 ```
 

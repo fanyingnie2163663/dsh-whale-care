@@ -181,14 +181,21 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 <details>
 <summary>Host impressions</summary>
 
-Definition: **a read-only impression snapshot written by another plugin**; this plugin only reads it, never writes back, and never requires it.
+Definition: **a read-only impression snapshot** written by another plugin to `$DSH_HOME/whale-weather/user-context.json`; this plugin only reads it, never writes back, and never requires it.
 
-- `profile.json` wins; the snapshot only fills missing fields (commute, cold/heat, health notes); older than 7 days or broken JSON is ignored; keyword matching only, no guessing, and writing the snapshot is the host's job.
+- `profile.json` wins; the snapshot only fills missing fields (commute, cold/heat, health notes); `version` not 1, missing `updatedAt`, or older than 7 days is ignored (a copied sample will expire — write `Date.now()` when producing the file); keyword matching only, no guessing, and writing the snapshot is the host's job.
 ```json
 {
   "version": 1,
+  "updatedAt": 1794960000000,
   "source": "qq-bridge",
-  "user": { "traits": ["平时骑车上班", "有鼻炎"], "interactionCount": 3 }
+  "user": {
+    "qq": "100000001",
+    "displayName": "示例用户",
+    "traits": ["平时骑车上班", "有鼻炎"],
+    "interactionCount": 3,
+    "lastSeenAt": 1794864000000
+  }
 }
 ```
 
