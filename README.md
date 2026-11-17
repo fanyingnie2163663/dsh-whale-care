@@ -190,8 +190,8 @@ qq-bridge 额外只提供两件事，都不是插件依赖：
   "updatedAt": 1793399075989,
   "source": "qq-bridge",
   "user": {
-    "qq": "741934896",
-    "displayName": "DDDeSt1ny",
+    "qq": "123456789",
+    "displayName": "示例用户",
     "traits": ["平时骑车上班", "有鼻炎"],
     "interactionCount": 3,
     "lastSeenAt": 1793303867850
@@ -272,7 +272,7 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 
 ```
 QQ_WEATHER_ALERT_TIMES=07:00,18:00      # 逗号分隔
-QQ_WEATHER_ALERT_TARGET=private:741934896
+QQ_WEATHER_ALERT_TARGET=private:123456789
 QQ_WEATHER_ALERT_ENABLED=false          # 关闭
 ```
 

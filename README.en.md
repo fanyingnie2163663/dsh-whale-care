@@ -191,8 +191,8 @@ Then restart dsh; otherwise the model gets `工具 "weather" 不在 QQ 桥接白
   "updatedAt": 1793399075989,
   "source": "qq-bridge",
   "user": {
-    "qq": "741934896",
-    "displayName": "DDDeSt1ny",
+    "qq": "123456789",
+    "displayName": "SampleUser",
     "traits": ["平时骑车上班", "有鼻炎"],
     "interactionCount": 3,
     "lastSeenAt": 1793303867850

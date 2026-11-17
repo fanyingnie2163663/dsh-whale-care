@@ -36,8 +36,8 @@ const ctx = (traits, extra = {}) => ({
   updatedAt: Date.now(),
   source: 'qq-bridge',
   user: {
-    qq: '741934896',
-    displayName: 'DDDeSt1ny',
+    qq: '123456789',
+    displayName: '示例用户',
     traits,
     interactionCount: 3,
     lastSeenAt: Date.now() - 3600_000,
@@ -52,7 +52,7 @@ const ctx = (traits, extra = {}) => ({
 let h = hintsFromContext(ctx(['平时骑车上班', '有鼻炎，空气差会难受']).user);
 assert(h.commute === 'bike', '「骑车上班」→ 出行方式 bike');
 assert(/鼻炎/.test(h.notes || ''), '健康类印象 → notes');
-assert(h.displayName === 'DDDeSt1ny', '带出 QQ 昵称');
+assert(h.displayName === '示例用户', '带出 QQ 昵称');
 
 h = hintsFromContext(ctx(['我怕冷', '每天走路去地铁站']).user);
 assert(h.commute === 'walk', '「走路」优先于「地铁」');
