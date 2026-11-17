@@ -122,6 +122,8 @@ Sample output (Hefei · 2026-11-03 snapshot):
 | Field | Meaning |
 | --- | --- |
 | `city` | Default city |
+| `lat` / `lon` | Latitude / longitude in decimal degrees (both or neither): district / point precision, see "Locate by coordinates" below |
+| `location` | A pasted coordinate string such as `31.8639,117.2808`; same as giving `lat` and `lon` |
 | `nickname` | What the user wants to be called |
 | `coldSensitive` | Warns at a 3°C drop, keeps-warm at ≤8°C |
 | `heatSensitive` | Heat warning at 28°C |
@@ -131,7 +133,20 @@ Sample output (Hefei · 2026-11-03 snapshot):
 | `dailyCare` | The morning message; `false` turns it off |
 | `careTime` | Fixed time `HH:MM`; unset follows the routine |
 
-Travel adds `travelCity` (used first for forecasts) and `travelUntil` (last day; reverts the next day).
+Travel adds `travelCity` (used first for forecasts) and `travelUntil` (last day; reverts the next day). While travelling the city name is resolved again (custom coordinates belong to home and do not travel with you).
+
+**Locate by coordinates (district / point).** Chinese district names (蜀山区 / 朝阳区) are not in Open-Meteo's geocoder, so coordinates are the reliable way to get district-level data.
+
+| Where to get them | How |
+| --- | --- |
+| Amap / Baidu / Tencent Maps apps | Long-press a place → details / share → copy coordinates (looks like `31.8639,117.2808`) |
+| Google Maps | Right-click a place → copy coordinates |
+| Web tools (e.g. latlong.net) | Search a place, copy the result |
+
+- Usage: give `weather_profile` the pair `lat` / `lon`, or paste a string into `location`; `describe` then echoes `坐标 31.8639, 117.2808（自定义）`, and one resolved from the city name shows `（由城市名解析）`;
+- **Honest precision**: Open-Meteo's grid is roughly 1–11 km; neighbouring districts usually differ by only 1–2°C, so do not expect district-accurate temperature. What is genuinely district-level is **AQI** (industrial estate vs park differ a lot);
+- Coordinates from Amap / Tencent are GCJ-02 and from Baidu are BD-09, offset by 100–700 m from the WGS-84 the weather services use — this does not affect results (a few hundred metres lands in the same grid cell), but do not treat the numbers as raw WGS-84;
+- When a city name cannot be resolved the plugin says so and points to a broader city name or setting `lat` / `lon`.
 
 </details>
 
@@ -258,8 +273,9 @@ QQ_WEATHER_ALERT_ENABLED=false
 
 | Purpose | Service | Data sent |
 | --- | --- | --- |
-| Weather | [wttr.in](https://wttr.in) | city name |
-| Air quality | [open-meteo.com](https://open-meteo.com) | lat/lon returned by wttr |
+| Weather | [wttr.in](https://wttr.in) | city name or coordinates (coordinates when `lat`/`lon` are set) |
+| City lookup | [geocoding-api.open-meteo.com](https://open-meteo.com) | city name (skipped when coordinates are set) |
+| Air quality | [open-meteo.com](https://open-meteo.com) | latitude / longitude |
 
 No account, key or chat content is sent; the plugin collects no usage data. Both services are free and registration-less: wttr.in is community-run and may rate-limit; Open-Meteo's free tier is non-commercial only. MIT; weather data remains the property of the two services above.
 

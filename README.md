@@ -128,6 +128,8 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 | 字段 | 说明 |
 | --- | --- |
 | `city` | 默认城市 |
+| `lat` / `lon` | 经纬度（十进制度，必须成对）：区/点位级定位，见下方「用坐标定位」 |
+| `location` | 一次粘贴的坐标串，如 `31.8639,117.2808`；等价于同时给 `lat` 和 `lon` |
 | `nickname` | 希望被怎么称呼 |
 | `coldSensitive` | 怕冷：降温 3°C 就提醒，最低 ≤8°C 就保暖 |
 | `heatSensitive` | 怕热：28°C 就提醒补水避暑 |
@@ -137,7 +139,20 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 | `dailyCare` | 每天早上那条主动关心，`false` 关掉 |
 | `careTime` | 固定时刻 `HH:MM`；不设就跟作息自适应 |
 
-出差另有两个字段：`travelCity`（优先用它查天气）、`travelUntil`（用到哪天，次日自动回退）。
+出差另有两个字段：`travelCity`（优先用它查天气）、`travelUntil`（用到哪天，次日自动回退）。出差期间会临时按出差城市名解析（自定义坐标是「家」的，不跟过去）。
+
+**用坐标定位（区 / 点位级）。** 中文区名（蜀山区 / 朝阳区 / 包河区）在 Open-Meteo 的地理编码里查不到，坐标才是可靠的区级定位方式。
+
+| 从哪拿 | 怎么拿 |
+| --- | --- |
+| 高德 / 百度 / 腾讯地图 App | 长按地点 → 详情 / 分享 → 复制坐标（形如 `31.8639,117.2808`） |
+| Google Maps | 右键地点 → 复制坐标 |
+| 网页工具（如 latlong.net） | 按地名搜索后复制 |
+
+- 用法：`weather_profile` 的 `lat` / `lon` 成对给，或者直接 `location` 粘一串；set 完 describe 会回显「坐标 31.8639, 117.2808（自定义）」，按城市名解析出来的则显示「（由城市名解析）」；
+- **精度说实话**：Open-Meteo 网格约 1–11km，区和区之间气温通常只差 1–2°C，别指望「区级精准气温」；真正有区级意义的是 **AQI**（工业区 vs 公园差别很大）；
+- 坐标来源是 GCJ-02（高德 / 腾讯）或 BD-09（百度），与天气服务用的 WGS-84 有 100–700m 偏移 —— 对结果没有影响（几百米落在同一个网格点里），但别把它当成 WGS-84 原值；
+- 城市名查不到时它会直接说「找不到城市…」，并告诉你可以换更通用的城市名、或者设 `lat` / `lon`。
 
 </details>
 
@@ -272,8 +287,9 @@ QQ_WEATHER_ALERT_ENABLED=false
 
 | 用途 | 服务 | 发送的数据 |
 | --- | --- | --- |
-| 天气 | [wttr.in](https://wttr.in) | 城市名 |
-| 空气质量 | [open-meteo.com](https://open-meteo.com) | wttr 返回的经纬度 |
+| 天气 | [wttr.in](https://wttr.in) | 城市名或坐标（设了 lat/lon 就发坐标） |
+| 城市名解析 | [geocoding-api.open-meteo.com](https://open-meteo.com) | 城市名（设了坐标就不发） |
+| 空气质量 | [open-meteo.com](https://open-meteo.com) | 经纬度 |
 
 不发送账号、密钥或聊天内容，插件也不收集任何使用数据。
 
