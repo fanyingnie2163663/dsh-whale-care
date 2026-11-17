@@ -144,7 +144,7 @@ Travel adds `travelCity` (used first for forecasts) and `travelUntil` (last day;
 | Web tools (e.g. latlong.net) | Search a place, copy the result |
 
 - Usage: give `weather_profile` the pair `lat` / `lon`, or paste a string into `location`; `describe` then echoes `坐标 31.8639, 117.2808（自定义）`, and one resolved from the city name shows `（由城市名解析）`;
-- **Honest precision**: Open-Meteo's grid is roughly 1–11 km; neighbouring districts usually differ by only 1–2°C, so do not expect district-accurate temperature. What is genuinely district-level is **AQI** (industrial estate vs park differ a lot);
+- **Honest precision**: Open-Meteo's grid is roughly 1–11 km; neighbouring districts usually differ by only 1–2°C, and **air quality is likely to land in the same grid cell too** (an industrial estate and a park usually share one). Coordinates pay off at positions that straddle cells — city edges, mountains, lakesides, suburbs — where the value can differ by a whole cell from downtown;
 - Coordinates from Amap / Tencent are GCJ-02 and from Baidu are BD-09, offset by 100–700 m from the WGS-84 the weather services use — this does not affect results (a few hundred metres lands in the same grid cell), but do not treat the numbers as raw WGS-84;
 - When a city name cannot be resolved the plugin says so and points to a broader city name or setting `lat` / `lon`.
 
@@ -234,7 +234,7 @@ Not a dashboard: one card with today, tomorrow, and at most three suggestions.
 
 <p align="center"><img src="assets/screenshot-week.png" width="384" alt="Weekly review card"></p>
 
-The weekly card (`weather_card` with `period: "week"`): inside one ISO week the temperature grows right (today → Sunday) and the mood line grows left (Monday → today); the last cell is this week's token usage.
+The weekly card (`weather_card` with `period: "week"`): inside one ISO week the temperature grows right (today → Sunday) and the mood line grows left (Monday → today); the last cell is this week's token usage (omitted entirely — and the fact band drops back to two cells — when there is no usage snapshot and no local ledger). A seven-day temperature band needs a source that can return seven days (open-meteo); a three-day source degrades it to a single range bar and keeps the rest.
 
 <sub>Same frozen sample: Hefei · 2026-11-18.</sub>
 
@@ -299,7 +299,7 @@ lib/alerts.js      alerts: levels + per-day dedupe
 lib/festivals.js   festivals / solar terms; lib/mood.js mood log
 lib/card.js        weather card SVG (720×980); lib/index.js dsh wiring
 lib/tools/*.js     one file per tool; scripts/ demo and asset rendering
-test/*.test.js     node --test suites (15 files)
+test/*.test.js     node --test suites (17 files)
 ```
 
 <details>

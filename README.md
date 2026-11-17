@@ -150,7 +150,7 @@ dsh plugin --profile web add github:fanyingnie2163663/dsh-whale-care
 | 网页工具（如 latlong.net） | 按地名搜索后复制 |
 
 - 用法：`weather_profile` 的 `lat` / `lon` 成对给，或者直接 `location` 粘一串；set 完 describe 会回显「坐标 31.8639, 117.2808（自定义）」，按城市名解析出来的则显示「（由城市名解析）」；
-- **精度说实话**：Open-Meteo 网格约 1–11km，区和区之间气温通常只差 1–2°C，别指望「区级精准气温」；真正有区级意义的是 **AQI**（工业区 vs 公园差别很大）；
+- **精度说实话**：Open-Meteo 网格约 1–11km，区和区之间气温通常只差 1–2°C，别指望「区级精准」——**空气质量也一样，工业区和公园大概率落在同一个格点**。坐标真正有用的是**跨格点的位置**：城市边缘、山区、湖边、郊区，这些地方和市中心可能差一整格；
 - 坐标来源是 GCJ-02（高德 / 腾讯）或 BD-09（百度），与天气服务用的 WGS-84 有 100–700m 偏移 —— 对结果没有影响（几百米落在同一个网格点里），但别把它当成 WGS-84 原值；
 - 城市名查不到时它会直接说「找不到城市…」，并告诉你可以换更通用的城市名、或者设 `lat` / `lon`。
 
@@ -245,7 +245,7 @@ export async function fetchWeather(city, { days = 3 } = {}) {
 
 <p align="center"><img src="assets/screenshot-week.png" width="384" alt="每周回顾卡"></p>
 
-周卡（`weather_card` 的 `period: "week"`）：在一个 ISO 周里，温度往右长（今天→周日）、情绪往左长（周一→今天），最右边是本周 token 用量。
+周卡（`weather_card` 的 `period: "week"`）：在一个 ISO 周里，温度往右长（今天→周日）、情绪往左长（周一→今天），最右边是本周 token 用量（没有 usage 快照、本机也没有账本时，这一格整格省略、事实带退回两栏）。7 天温度带需要能给 7 天的源（open-meteo）；默认源只给 3 天时会退化成一条区间条，其余照常。
 
 <sub>同一份冻结样本：合肥 · 2026-11-18。</sub>
 
@@ -319,8 +319,8 @@ lib/alerts.js      极端天气预警：阈值分级 + 当天去重
 lib/festivals.js   节日 / 节气表（2026–2027）；lib/mood.js 情绪记录
 lib/card.js        天气卡 SVG（720×980）
 lib/index.js       dsh 适配：只做接线；lib/tools/*.js 八个工具各一个文件
-scripts/           demo.mjs 演示脚本；render-readme-assets.mjs 渲染 README 三张图
-test/*.test.js     node --test 单测（15 个文件）
+scripts/           demo.mjs 演示脚本；render-readme-assets.mjs 渲染 README 四张图
+test/*.test.js     node --test 单测（17 个文件）
 ```
 
 <details>

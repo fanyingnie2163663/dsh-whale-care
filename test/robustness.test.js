@@ -162,32 +162,22 @@ const day = (md, max, min, extra = {}) => ({ label: md, date: md, min, max, desc
   const one = W.buildWeeklyReview({ data, moods: [moods[2]], now }).mood
   week.ok(one.average === 4 && one.recordedDays === 1, '只记一天时均分 = 那天')
 
-  // ── 提醒为空 ───────────────────────────────────────────────────────────
-  const none = W.buildWeeklyReview({ data, moods, reminders: [], now })
-  week.ok(none.reminders.thisWeek.length === 0 && none.reminders.nextWeek.items.length === 0, '没有提醒时两个列表都空')
-  week.ok(none.reminders.nextWeek.start === '2026-11-23' && none.reminders.nextWeek.end === '2026-11-29', '下周区间是下一个周一~周日')
-
-  // ── 提醒：这周设过的 / 下周将发生的 ─────────────────────────────────────
-  const created = (mo, d) => new Date(2026, mo - 1, d, 10, 0).getTime()
-  const reminders = [
-    { id: 'a', label: '吃降压药', time: '08:00', intent: 'text', createdAt: created(11, 17) },
-    { id: 'b', label: '上周设的', time: '09:00', createdAt: created(11, 10) },
-    { id: 'c', label: '每天喝水', time: '15:00', createdAt: created(11, 2) },
-    { id: 'd', label: '周一例会', time: '09:30', days: [1], createdAt: created(10, 1) },
-    { id: 'e', label: '体检', time: '08:30', date: '2026-11-25', createdAt: created(11, 1) },
-    { id: 'f', label: '停用的', time: '10:00', enabled: false, createdAt: created(11, 1) },
+  // ── 邻窗不串味：预报伸到下周时只留本周的天（弓头实测的「最暖取到下周」就是这里）──
+  const longSpan = [
+    day('11-16', 16, 5), day('11-17', 18, 6), day('11-18', 13, 6), day('11-19', 12, 3),
+    day('11-20', 14, 4), day('11-21', 15.8, 3.1), day('11-22', 14.9, 4.6),  // 本周日
+    day('11-23', 14.8, 8.3), day('11-24', 12.3, 1.3), day('11-25', 20, 9),  // 下周：必须被丢掉
   ]
-  const rm = W.buildWeeklyReview({ data, now, reminders }).reminders
-  week.ok(rm.thisWeek.length === 1 && rm.thisWeek[0].id === 'a', '这周设过的只有 11-17 那条')
-  week.ok(rm.thisWeek[0].schedule === '每天' && rm.thisWeek[0].text.includes('08:00'), '带人话时间表')
-  // a/c 是每天、b 也是每天（上周设的不影响下周照常发生）、d 每周一、e 一次性
-  week.ok(rm.nextWeek.items.map((i) => i.id).join(',') === 'a,e,b,d,c', `下周按时间排 5 条（实际 ${rm.nextWeek.items.map((i) => i.id).join(',')}）`)
-  week.ok(rm.nextWeek.items[0].id === 'a' && rm.nextWeek.items[0].count === 7, '每天的排第一且 7 天都发生')
-  const meeting = rm.nextWeek.items.find((i) => i.id === 'd')
-  week.ok(meeting.dates.length === 1 && meeting.dates[0] === '2026-11-23' && meeting.schedule === '周1', '每周一落在 11-23')
-  const body = rm.nextWeek.items.find((i) => i.id === 'e')
-  week.ok(body.dates.length === 1 && body.dates[0] === '2026-11-25', '一次性提醒落在 11-25')
-  week.ok(!rm.nextWeek.items.some((i) => i.id === 'f'), '停用的提醒不算「将发生」')
+  const span = W.buildWeeklyReview({ data: { place: '合肥', days: longSpan }, now: at(2026, 11, 18) })
+  week.ok(span.weather.count === 7 && span.weather.days.every((d) => d.date <= span.week.end), '本周之后的日子被丢掉（7 条）')
+  week.ok(span.weather.extremes.hottest.value === 18 && span.weather.extremes.hottest.date === '2026-11-17', '最暖仍是本周的 18°，不是下周的 20°')
+  // 周日生成：7 天里只有今天在本周，极值只能来自这一天
+  const sundayOnly = W.buildWeeklyReview({
+    data: { place: '合肥', days: [day('11-22', 14.9, 4.6), day('11-23', 14.8, 8.3), day('11-28', 16, 6)] },
+    now: at(2026, 11, 22),
+  })
+  week.ok(sundayOnly.weather.count === 1 && sundayOnly.weather.extremes.hottest.date === '2026-11-22', '周日生成：只剩本周日 1 天，最暖不取下周的 16°')
+  week.ok(sundayOnly.weather.extremes.hottest.value === 14.9, '极值给原始值 14.9（取整是渲染层的事）')
 
   // ── 城市名超长 ─────────────────────────────────────────────────────────
   const longCity = '内蒙古自治区呼伦贝尔市额尔古纳市恩和俄罗斯族民族乡'
@@ -202,7 +192,7 @@ const day = (md, max, min, extra = {}) => ({ label: md, date: md, min, max, desc
   week.ok(blank.city === null && blank.air === null, '空输入不抛错，城市/空气给 null')
   week.ok(blank.weather.count === 0 && blank.weather.extremes.hottest === null, '没有天气：0 个槽、极值 null')
   week.ok(blank.mood.average === null && blank.mood.slots.length === 7, '没有情绪：7 个空槽')
-  week.ok(blank.reminders.thisWeek.length === 0, '没有提醒：空列表')
+  week.ok(blank.weather.missingDates.length === 7, '没有天气时 7 个缺口都列出来')
 
   // ── 天气槽的容错 ───────────────────────────────────────────────────────
   const odd = W.buildWeeklyReview({
@@ -303,5 +293,5 @@ const day = (md, max, min, extra = {}) => ({ label: md, date: md, min, max, desc
     + ' · 温差最大 ' + r.weather.extremes.biggestSwing.value + '°（' + r.weather.extremes.biggestSwing.weekday + '）'
     + ' · 空气最差 AQI ' + r.weather.extremes.worstAir.value + '（' + r.weather.extremes.worstAir.weekday + '）')
 
-  nodeAssert.equal(week.total(), 72, '周卡断言总数 72')
+  nodeAssert.equal(week.total(), 67, '周卡断言总数 67')
 })

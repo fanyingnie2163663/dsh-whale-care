@@ -109,6 +109,23 @@ test('weekly card', async () => {
   )
   assert(calm.includes('这周记了 2 次') && calm.includes('4.5 分'), '导语用第 5 条：记了 2 次，平均 4.5 分')
 
+  // ── 邻窗不串味：预报伸到下周时，事实带的「最暖」必须还在本周 ──────────────
+  const neighbor = buildWeeklyCardSvg(
+    buildWeeklyReview({
+      data: { ...data, days: [...FORECAST_MIDWEEK.slice(0, 5), DAY('11-23', 20, 9), DAY('11-24', 22, 11)] },
+      now,
+    }),
+    {}, { now },
+  )
+  assert(neighbor.includes('周六 16°') && !neighbor.includes('20°') && !neighbor.includes('22°'), '最暖不取下周的温度（20/22 不该出现）')
+
+  // 周日生成：本周只剩今天 1 天 → 温度带退化区间条，事实最暖是今天
+  const sundayOnly = buildWeeklyCardSvg(
+    buildWeeklyReview({ data: { ...data, days: [DAY('11-22', 14.9, 4.6), DAY('11-25', 20, 9)] }, now: at(2026, 11, 22) }),
+    {}, { now: at(2026, 11, 22) },
+  )
+  assert(sundayOnly.includes('15°') && !sundayOnly.includes('20°'), '周日生成：最暖是今天的 14.9→15°，不是下周的 20°')
+
   // ── 空态 1：无情绪 ────────────────────────────────────────────────
   const noMood = buildWeeklyCardSvg(buildWeeklyReview({ data, now }), {}, { now })
   assert((noMood.match(/这周还没有记录/g) || []).length === 1, '无情绪：「这周还没有记录」恰好 1 次')
@@ -193,15 +210,50 @@ test('weekly card', async () => {
   const tool = toolBox.tool;
   assert(tool.name === 'weather_card', '工具名不变');
   assert(tool.parameters.properties.period.enum.join('/') === 'day/week', 'period 只有 day / week');
+  // 默认源（stub 只给 3 天）→ 周卡路径应自己再试一次 open-meteo，拿到 7 天
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async (url) => {
+    const text = String(url);
+    if (text.includes('geocoding-api')) {
+      return { ok: true, status: 200, json: async () => ({ results: [{ latitude: 31.86, longitude: 117.28, name: '芜湖', country: '中国' }] }) };
+    }
+    if (text.includes('air-quality')) return { ok: false, status: 503, json: async () => ({}) };
+    if (text.includes('api.open-meteo.com')) {
+      const dates = ['2026-11-18', '2026-11-19', '2026-11-20', '2026-11-21', '2026-11-22', '2026-11-23', '2026-11-24'];
+      const hours = [];
+      for (const date of dates) for (let h = 0; h < 24; h += 1) hours.push(date + 'T' + String(h).padStart(2, '0') + ':00');
+      const zeros = hours.map(() => 0);
+      return {
+        ok: true,
+        status: 200,
+        json: async () => ({
+          daily: {
+            time: dates,
+            temperature_2m_max: dates.map(() => 15),
+            temperature_2m_min: dates.map(() => 5),
+            weather_code: dates.map(() => 0),
+            precipitation_probability_max: dates.map(() => 0),
+            precipitation_sum: dates.map(() => 0),
+            wind_speed_10m_max: dates.map(() => 10),
+          },
+          hourly: { time: hours, temperature_2m: zeros, precipitation_probability: zeros, precipitation: zeros, weather_code: zeros },
+          current: { temperature_2m: 13, apparent_temperature: 12, relative_humidity_2m: 60, weather_code: 0, wind_speed_10m: 10, uv_index: 2 },
+        }),
+      };
+    }
+    throw new Error('不该请求：' + text);
+  };
   const dayOut = await tool.execute({ city: '芜湖' });
-  const weekOut = await tool.execute({ city: '芜湖', period: 'week' });
+  const fallbackOut = await tool.execute({ city: '芜湖', period: 'week' });
+  globalThis.fetch = realFetch;
   const dayFile = dayOut.text.match(/：(.+?\.svg)/)[1];
-  const weekFile = weekOut.text.match(/：(.+?\.svg)/)[1];
+  const weekFile = fallbackOut.text.match(/：(.+?\.svg)/)[1];
   assert(existsSync(dayFile) && existsSync(weekFile), '两张卡都落盘了');
   const daySvg = readFileSync(dayFile, 'utf8');
   const weekSvg = readFileSync(weekFile, 'utf8');
   assert(daySvg.includes('现在') === false && daySvg.includes('°') && !daySvg.includes('第 47 周'), 'period 默认仍是日卡');
   assert(weekSvg.includes('第 47 周') && weekSvg.includes('本周 Token') === false, 'period=week 走周卡（stub 没用量 → 无 token 格）');
+  assert(weekSvg.includes('<polyline') && weekSvg.includes('周四'), '源只给 3 天时周卡自动补 open-meteo，画出了温度带折线（没退化成区间条）');
   delete process.env.DSH_WEATHER_PROVIDER;
 
   // ── 日卡逐字节不变（重构前抓的三个 sha）──────────────────────────────
@@ -226,5 +278,5 @@ test('weekly card', async () => {
   rmSync(home, { recursive: true, force: true })
   delete process.env.DSH_HOME
 
-  nodeAssert.equal(total(), 72, '断言总数 72')
+  nodeAssert.equal(total(), 75, '断言总数 75')
 })
